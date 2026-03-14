@@ -33,6 +33,22 @@ const { title, description, image } = Astro.props;
 <!-- Font preloads -->
 <link rel="preload" href={withBase('/fonts/atkinson-regular.woff')} as="font" type="font/woff" crossorigin />
 <link rel="preload" href={withBase('/fonts/atkinson-bold.woff')} as="font" type="font/woff" crossorigin />
+<style is:inline>{`
+	@font-face {
+		font-family: "Atkinson";
+		src: url("${withBase('/fonts/atkinson-regular.woff')}") format("woff");
+		font-weight: 400;
+		font-style: normal;
+		font-display: swap;
+	}
+	@font-face {
+		font-family: "Atkinson";
+		src: url("${withBase('/fonts/atkinson-bold.woff')}") format("woff");
+		font-weight: 700;
+		font-style: normal;
+		font-display: swap;
+	}
+`}</style>
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
