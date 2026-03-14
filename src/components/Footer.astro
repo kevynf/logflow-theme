@@ -1,0 +1,83 @@
+---
+import { SOCIAL_LINKS, COPYRIGHT_NAME } from '../consts';
+import SocialIcon from './SocialIcon.astro';
+
+const today = new Date();
+const builtAt = new Date();
+const builtAtParts = new Intl.DateTimeFormat('zh-CN', {
+	timeZone: 'Asia/Shanghai',
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit',
+	hour: '2-digit',
+	minute: '2-digit',
+	hour12: false,
+})
+	.formatToParts(builtAt)
+	.reduce<Record<string, string>>((acc, part) => {
+		if (part.type !== 'literal') {
+			acc[part.type] = part.value;
+		}
+		return acc;
+	}, {});
+const builtAtLabel = `${builtAtParts.year}-${builtAtParts.month}-${builtAtParts.day} ${builtAtParts.hour}:${builtAtParts.minute} UTC+08:00 (Asia/Shanghai)`;
+---
+
+<footer>
+	<div class="footer-meta">
+		<p>&copy; {today.getFullYear()} {COPYRIGHT_NAME}. All rights reserved.</p>
+		<p class="build-info">Last updated at build: {builtAtLabel}</p>
+	</div>
+	<div class="social-links">
+		{
+			SOCIAL_LINKS.map((link) => (
+				<a href={link.href} target="_blank" rel="noopener noreferrer">
+					<span class="sr-only">{link.label}</span>
+					<SocialIcon icon={link.icon} />
+				</a>
+			))
+		}
+	</div>
+</footer>
+<style>
+	footer {
+		padding: 0.5em 1.5em;
+		background: transparent;
+		color: rgb(var(--gray));
+		text-align: center;
+		width: 100%;
+		max-width: 720px;
+		margin: 2em auto;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.footer-meta {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0;
+		text-align: left;
+		line-height: 1.2;
+	}
+	.footer-meta p {
+		margin: 0;
+	}
+	.build-info {
+		font-size: 0.78rem;
+		margin-top: 0;
+	}
+	.social-links {
+		display: flex;
+		justify-content: center;
+		gap: 0.5em;
+		margin-top: 0;
+	}
+	.social-links a {
+		text-decoration: none;
+		color: rgb(var(--gray));
+	}
+	.social-links a:hover {
+		color: rgb(var(--gray-dark));
+	}
+</style>

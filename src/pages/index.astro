@@ -1,0 +1,327 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import GitHubContribute from '../components/GitHubContribute.astro';
+import Header from '../components/Header.astro';
+import { BLOG_PAGE, HOME_PROFILE, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const allPosts = (await getCollection('blog'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+;
+const posts = allPosts.slice(0, HOME_PROFILE.recentPostsLimit);
+const tagMap = new Map<string, number>();
+for (const post of allPosts) {
+	for (const tag of post.data.tags ?? []) {
+		tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1);
+	}
+}
+const tags = Array.from(tagMap.entries())
+	.sort((a, b) => b[1] - a[1])
+	.map(([name, count]) => ({ name, count }));
+const maxTagCount = Math.max(1, ...tags.map((item) => item.count));
+
+const aboutEntry = await getEntry('about', 'index');
+const aboutRaw = aboutEntry?.body ?? '';
+const paragraphs = aboutRaw
+	.split(/\r?\n\r?\n/)
+	.map((item) => item.trim())
+	.filter((item) => item.length > 0 && !item.startsWith('#') && !item.startsWith('---'));
+const firstParagraph = (paragraphs[0] ?? '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/[*_`>#-]/g, '');
+const aboutExcerpt =
+	firstParagraph.length > HOME_PROFILE.aboutExcerptLength
+		? `${firstParagraph.slice(0, HOME_PROFILE.aboutExcerptLength)}...`
+		: firstParagraph;
+const profileStyle = `--profile-name-size: ${HOME_PROFILE.nicknameFontSize ?? '1.45rem'}; --profile-tagline-size: ${HOME_PROFILE.taglineFontSize ?? '1em'};`;
+const contentStyle = `--home-posts-column: ${HOME_PROFILE.homePostsColumnRatio ?? '0.82fr'}; --home-tags-min: ${HOME_PROFILE.homeTagsMinWidth ?? '260px'};`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			main {
+				display: grid;
+				row-gap: 1.8rem;
+			}
+			.home-intro {
+				margin-top: 0;
+			}
+			.home-intro > * + * {
+				margin-top: 1.4rem;
+			}
+			.avatar-wrap {
+				width: 132px;
+				aspect-ratio: 1 / 1;
+				border: 2px solid rgba(var(--gray), 0.25);
+				border-radius: 8px;
+				overflow: hidden;
+			}
+			.profile-intro {
+				display: grid;
+				grid-template-columns: 132px 1fr;
+				gap: 1rem;
+				align-items: end;
+				max-width: 560px;
+			}
+			.profile-meta {
+				text-align: left;
+				margin: 0;
+			}
+			.profile-tagline {
+				margin: 0.3rem 0 0;
+				font-size: var(--profile-tagline-size);
+				line-height: 1.65;
+				color: rgb(var(--gray));
+				overflow-wrap: anywhere;
+				white-space: normal;
+			}
+			.profile-tagline.is-italic {
+				font-style: italic;
+				display: inline-block;
+				transform: skewX(-8deg);
+				transform-origin: left center;
+			}
+			.avatar-wrap img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				border-radius: 0;
+			}
+			.about-snippet {
+				padding: 0;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+			}
+			.about-title,
+			.recent-posts h2,
+			.home-tags h2 {
+				margin: 0 0 0.35rem;
+				font-size: 1.25rem;
+				line-height: 1.2;
+				color: rgb(var(--black));
+			}
+			.profile-name {
+				margin: 0 0 0.35rem;
+				font-size: var(--profile-name-size);
+				line-height: 1.2;
+				color: rgb(var(--black));
+			}
+			.about-snippet p {
+				margin: 0 0 0.75rem;
+				color: rgb(var(--gray));
+				font-size: 1em;
+			}
+			.about-snippet a {
+				text-decoration: none;
+				font-weight: 600;
+				font-size: 1em;
+			}
+			.home-content {
+				display: grid;
+				grid-template-columns: minmax(0, var(--home-posts-column)) minmax(var(--home-tags-min), 1fr);
+				gap: 1.2rem;
+				align-items: start;
+			}
+			.recent-posts {
+				max-width: 520px;
+			}
+			.recent-list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: grid;
+				gap: 0.6rem;
+			}
+			.recent-list li {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 0.8rem;
+			}
+			.recent-list a {
+				text-decoration: none;
+				font-weight: 600;
+				font-size: 1em;
+				min-width: 0;
+				display: block;
+			}
+			.recent-list time {
+				font-size: 0.92em;
+				color: rgb(var(--gray));
+				white-space: nowrap;
+			}
+			.tags-sphere {
+				position: relative;
+				width: 100%;
+				height: 260px;
+				max-width: 360px;
+				margin: 0 auto;
+				perspective: 900px;
+				overflow: hidden;
+			}
+			.tags-sphere .tag-node {
+				position: absolute;
+				top: 0;
+				left: 0;
+				text-decoration: none;
+				font-size: var(--tag-cloud-size);
+				line-height: 1.2;
+				display: inline-block;
+				transform-origin: center center;
+				will-change: transform, opacity;
+				white-space: nowrap;
+			}
+			.tags-empty {
+				margin: 0;
+				font-size: 0.95em;
+				color: rgb(var(--gray));
+				text-align: center;
+			}
+			@media (max-width: 720px) {
+				.profile-intro {
+					grid-template-columns: 1fr;
+					align-items: start;
+					max-width: none;
+				}
+				.home-content {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="home-intro" style={profileStyle}>
+				<div class="profile-intro">
+					<div class="avatar-wrap">
+						<img src={HOME_PROFILE.avatarSrc} alt={HOME_PROFILE.avatarAlt} loading="lazy" />
+					</div>
+					<div class="profile-meta">
+						<h2 class="profile-name">{HOME_PROFILE.nickname}</h2>
+						<p class={`profile-tagline ${HOME_PROFILE.taglineItalic ? 'is-italic' : ''}`}>
+							{HOME_PROFILE.tagline}
+						</p>
+					</div>
+				</div>
+				<div class="about-snippet">
+					<h2 class="about-title">About</h2>
+					<p>{aboutExcerpt}</p>
+					<a href="/about">Read full introduction</a>
+				</div>
+			</section>
+
+			<section class="home-content" style={contentStyle}>
+				<section class="recent-posts">
+					<h2>Posts</h2>
+					<ul class="recent-list">
+						{
+							posts.map((post) => (
+								<li>
+									<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+									<time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
+										{post.data.pubDate.toISOString().slice(5, 10)}
+									</time>
+								</li>
+							))
+						}
+					</ul>
+				</section>
+				<section class="home-tags">
+					<h2>{BLOG_PAGE.tagsTitle}</h2>
+					{
+						tags.length === 0 ? (
+							<p class="tags-empty">No tags</p>
+						) : (
+							<div class="tags-sphere" data-tag-sphere>
+								{
+									tags.map((tag) => (
+										<a
+											class="tag-node"
+											style={`--tag-cloud-size: ${0.88 + (tag.count / maxTagCount) * 0.42}em;`}
+											href={`/blog/tags/${encodeURIComponent(tag.name)}/`}
+										>
+											{tag.name}
+										</a>
+									))
+								}
+							</div>
+						)
+					}
+				</section>
+			</section>
+
+			<GitHubContribute />
+		</main>
+		<script is:inline>
+			const spheres = document.querySelectorAll('[data-tag-sphere]');
+			for (const sphere of spheres) {
+				const nodes = Array.from(sphere.querySelectorAll('.tag-node'));
+				if (nodes.length === 0) continue;
+				const state = [];
+				const size = Math.min(sphere.clientWidth, sphere.clientHeight);
+				const radius = size * 0.28;
+				let vx = 0.0022;
+				let vy = 0.0016;
+				let tx = vx;
+				let ty = vy;
+				const cx = sphere.clientWidth / 2;
+				const cy = sphere.clientHeight / 2;
+				for (let i = 0; i < nodes.length; i++) {
+					const y = 1 - (i / Math.max(nodes.length - 1, 1)) * 2;
+					const r = Math.sqrt(1 - y * y);
+					const phi = Math.PI * (3 - Math.sqrt(5)) * i;
+					state.push({ x: Math.cos(phi) * r * radius, y: y * radius, z: Math.sin(phi) * r * radius });
+				}
+				const rotateY = (p, a) => {
+					const c = Math.cos(a);
+					const s = Math.sin(a);
+					const x = p.x * c - p.z * s;
+					const z = p.x * s + p.z * c;
+					p.x = x;
+					p.z = z;
+				};
+				const rotateX = (p, a) => {
+					const c = Math.cos(a);
+					const s = Math.sin(a);
+					const y = p.y * c - p.z * s;
+					const z = p.y * s + p.z * c;
+					p.y = y;
+					p.z = z;
+				};
+				const render = () => {
+					vx += (tx - vx) * 0.08;
+					vy += (ty - vy) * 0.08;
+					for (let i = 0; i < nodes.length; i++) {
+						const p = state[i];
+						rotateY(p, vx);
+						rotateX(p, vy);
+						const depth = (p.z + radius) / (radius * 2);
+						const scale = 0.7 + depth * 0.75;
+						const opacity = 0.4 + depth * 0.6;
+						nodes[i].style.transform = `translate3d(${cx + p.x}px, ${cy + p.y}px, 0) translate(-50%, -50%) scale(${scale})`;
+						nodes[i].style.opacity = String(opacity);
+						nodes[i].style.zIndex = String(Math.round(depth * 100));
+					}
+					requestAnimationFrame(render);
+				};
+				sphere.addEventListener('pointermove', (e) => {
+					const rect = sphere.getBoundingClientRect();
+					const nx = (e.clientX - rect.left) / rect.width - 0.5;
+					const ny = (e.clientY - rect.top) / rect.height - 0.5;
+					tx = nx * 0.018;
+					ty = ny * 0.018;
+				});
+				sphere.addEventListener('pointerleave', () => {
+					tx = 0.0022;
+					ty = 0.0016;
+				});
+				render();
+			}
+		</script>
+		<Footer />
+	</body>
+</html>

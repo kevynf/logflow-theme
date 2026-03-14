@@ -1,0 +1,118 @@
+---
+import { COMMENTS } from '../consts';
+const shouldRender = COMMENTS.enabled;
+const isConfigured =
+	shouldRender &&
+	COMMENTS.provider === 'giscus' &&
+	COMMENTS.repo.trim().length > 0 &&
+	COMMENTS.repoId.trim().length > 0 &&
+	COMMENTS.categoryId.trim().length > 0;
+const themeLight = COMMENTS.themeLight ?? 'light';
+const themeDark = COMMENTS.themeDark ?? 'dark';
+---
+
+{
+	shouldRender && (
+		<section
+			class="comments"
+			data-giscus={isConfigured ? 'true' : 'false'}
+			data-repo={COMMENTS.repo}
+			data-repo-id={COMMENTS.repoId}
+			data-category={COMMENTS.category}
+			data-category-id={COMMENTS.categoryId}
+			data-mapping={COMMENTS.mapping}
+			data-lang={COMMENTS.lang}
+			data-theme-light={themeLight}
+			data-theme-dark={themeDark}
+		>
+			<h2>Comments</h2>
+			{
+				isConfigured ? (
+					<script is:inline>
+						const commentsContainer = document.querySelector('.comments[data-giscus="true"]');
+						if (commentsContainer) {
+							const repo = commentsContainer.getAttribute('data-repo') || '';
+							const repoId = commentsContainer.getAttribute('data-repo-id') || '';
+							const category = commentsContainer.getAttribute('data-category') || '';
+							const categoryId = commentsContainer.getAttribute('data-category-id') || '';
+							const mapping = commentsContainer.getAttribute('data-mapping') || 'pathname';
+							const lang = commentsContainer.getAttribute('data-lang') || 'zh-CN';
+							const lightTheme = commentsContainer?.getAttribute('data-theme-light') || 'light';
+							const darkTheme = commentsContainer?.getAttribute('data-theme-dark') || 'dark';
+
+							const getTheme = () =>
+								document.documentElement.classList.contains('dark') ? darkTheme : lightTheme;
+
+							const script = document.createElement('script');
+							script.src = 'https://giscus.app/client.js';
+							script.async = true;
+							script.crossOrigin = 'anonymous';
+							script.setAttribute('data-repo', repo);
+							script.setAttribute('data-repo-id', repoId);
+							script.setAttribute('data-category', category);
+							script.setAttribute('data-category-id', categoryId);
+							script.setAttribute('data-mapping', mapping);
+							script.setAttribute('data-strict', '0');
+							script.setAttribute('data-reactions-enabled', '1');
+							script.setAttribute('data-emit-metadata', '0');
+							script.setAttribute('data-input-position', 'top');
+							script.setAttribute('data-theme', getTheme());
+							script.setAttribute('data-lang', lang);
+							script.setAttribute('data-loading', 'lazy');
+							commentsContainer.appendChild(script);
+
+							const setGiscusTheme = () => {
+								const iframe = document.querySelector('iframe.giscus-frame');
+								if (!iframe) {
+									return false;
+								}
+								iframe.contentWindow?.postMessage(
+									{ giscus: { setConfig: { theme: getTheme() } } },
+									'https://giscus.app',
+								);
+								return true;
+							};
+
+							setGiscusTheme();
+							let attempts = 0;
+							const timer = setInterval(() => {
+								const ok = setGiscusTheme();
+								attempts += 1;
+								if (ok || attempts > 20) {
+									clearInterval(timer);
+								}
+							}, 300);
+
+							const observer = new MutationObserver(() => {
+								setGiscusTheme();
+							});
+							observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+						}
+					</script>
+				) : (
+					<p class="comments-hint">
+						Comments are not configured yet. Set COMMENTS.repo, COMMENTS.repoId and COMMENTS.categoryId in
+						src/consts.ts.
+					</p>
+				)
+			}
+		</section>
+	)
+}
+
+<style>
+	.comments {
+		margin-top: 2rem;
+		padding-top: 1rem;
+		border-top: 1px solid rgba(var(--gray), 0.2);
+	}
+	.comments h2 {
+		margin: 0 0 0.75rem;
+		font-size: 1.1rem;
+	}
+	.comments-hint {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.9rem;
+	}
+</style>

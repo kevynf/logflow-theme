@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import Header from '../../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
+
+const posts = await getCollection('blog');
+const tagMap = new Map<string, number>();
+for (const post of posts) {
+	for (const tag of post.data.tags ?? []) {
+		tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1);
+	}
+}
+const tags = Array.from(tagMap.entries())
+	.map(([name, count]) => ({ name, count }))
+	.sort((a, b) => b.count - a.count);
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`Tags | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<style>
+			h1 {
+				margin: 0 0 0.35rem;
+				font-size: 1.25rem;
+				line-height: 1.2;
+			}
+			.summary {
+				margin: 0 0 1rem;
+				color: rgb(var(--gray));
+			}
+			.tags-wrap {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+			}
+			.tags-wrap a {
+				text-decoration: none;
+				font-size: 0.95em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Tags</h1>
+			<p class="summary">共 {tags.length} 个标签</p>
+			<div class="tags-wrap">
+				{
+					tags.map((tag) => (
+						<a href={`/blog/tags/${tag.name}/`}>
+							{tag.name} ({tag.count})
+						</a>
+					))
+				}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

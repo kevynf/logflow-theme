@@ -1,0 +1,82 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import Header from '../../../components/Header.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	const collectionNames = new Set<string>();
+	for (const post of posts) {
+		if (post.data.collection) {
+			collectionNames.add(post.data.collection);
+		}
+	}
+	return Array.from(collectionNames).map((name) => ({
+		params: { slug: name },
+		props: { collectionName: name },
+	}));
+}
+
+const { collectionName } = Astro.props;
+const posts = (await getCollection('blog'))
+	.filter((post) => post.data.collection === collectionName)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const pageTitle = `${collectionName} | Collections | ${SITE_TITLE}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={pageTitle} description={SITE_DESCRIPTION} />
+		<style>
+			h1 {
+				margin: 0 0 0.35rem;
+				font-size: 1.25rem;
+				line-height: 1.2;
+			}
+			.summary {
+				margin: 0 0 1rem;
+				color: rgb(var(--gray));
+			}
+			.list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: grid;
+				gap: 0.4rem;
+			}
+			.list a {
+				text-decoration: none;
+				font-weight: 600;
+			}
+			time {
+				margin-left: 0.5rem;
+				color: rgb(var(--gray));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>{collectionName}</h1>
+			<p class="summary">共 {posts.length} 篇文章</p>
+			<ul class="list">
+				{
+					posts.map((post) => (
+						<li>
+							<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+							<time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
+								<FormattedDate date={post.data.pubDate} />
+							</time>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>

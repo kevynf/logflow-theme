@@ -1,0 +1,41 @@
+---
+import { GH_CONTRIBUTE } from '../consts';
+import GitHubCalendarWidget from './GitHubCalendarWidget';
+---
+
+<section class="gh-contribute">
+	<div class="section-head">
+		<h2>{GH_CONTRIBUTE.title}</h2>
+		<p>{GH_CONTRIBUTE.description}</p>
+	</div>
+	<GitHubCalendarWidget
+		client:load
+		username={GH_CONTRIBUTE.username}
+		errorMessage={GH_CONTRIBUTE.errorMessage}
+	/>
+</section>
+
+<style>
+	.gh-contribute {
+		margin-top: 0;
+		width: 100%;
+	}
+	.section-head h2 {
+		margin-bottom: 0.35rem;
+		font-size: 1.25rem;
+	}
+	.section-head p {
+		margin: 0 0 0.75rem;
+		color: rgb(var(--gray));
+		font-size: 1em;
+	}
+	:global(.gh-contribute .react-activity-calendar__count) {
+		color: rgb(var(--black));
+	}
+	:global(.gh-contribute .react-activity-calendar__legend-colors rect) {
+		rx: 2px;
+	}
+	:global(.gh-contribute .react-activity-calendar__scroll-container) {
+		overflow-x: hidden;
+	}
+</style>
