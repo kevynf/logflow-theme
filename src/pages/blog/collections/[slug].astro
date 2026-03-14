@@ -5,6 +5,7 @@ import Footer from '../../../components/Footer.astro';
 import FormattedDate from '../../../components/FormattedDate.astro';
 import Header from '../../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
+import { withBase } from '../../../utils/withBase';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -68,7 +69,7 @@ const pageTitle = `${collectionName} | Collections | ${SITE_TITLE}`;
 				{
 					posts.map((post) => (
 						<li>
-							<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+							<a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
 							<time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
 								<FormattedDate date={post.data.pubDate} />
 							</time>

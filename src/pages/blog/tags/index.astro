@@ -4,6 +4,7 @@ import BaseHead from '../../../components/BaseHead.astro';
 import Footer from '../../../components/Footer.astro';
 import Header from '../../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
+import { withBase } from '../../../utils/withBase';
 
 const posts = await getCollection('blog');
 const tagMap = new Map<string, number>();
@@ -50,7 +51,7 @@ const tags = Array.from(tagMap.entries())
 			<div class="tags-wrap">
 				{
 					tags.map((tag) => (
-						<a href={`/blog/tags/${tag.name}/`}>
+						<a href={withBase(`/blog/tags/${tag.name}/`)}>
 							{tag.name} ({tag.count})
 						</a>
 					))

@@ -5,6 +5,7 @@ import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { BLOG_PAGE, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { withBase } from '../../utils/withBase';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -230,7 +231,7 @@ const sidebarTags = Array.from(tagMap.entries())
 						<h1>{BLOG_PAGE.title}</h1>
 						<p class="list-head-meta">Page 1 · Showing {visiblePosts.length} of {totalPosts} posts</p>
 						<p class="list-head-link">
-							<a href="/blog/years/">View all posts by years →</a>
+							<a href={withBase('/blog/years/')}>View all posts by years →</a>
 						</p>
 					</div>
 					<ul class="post-list">
@@ -239,7 +240,7 @@ const sidebarTags = Array.from(tagMap.entries())
 								<li class="post-card">
 									<div class="post-body">
 										<div class="post-head">
-											<a class="post-title" href={`/blog/${post.id}/`}>
+											<a class="post-title" href={withBase(`/blog/${post.id}/`)}>
 												{post.data.title}
 											</a>
 											<time class="post-date" datetime={post.data.pubDate.toISOString().slice(0, 10)}>
@@ -255,7 +256,7 @@ const sidebarTags = Array.from(tagMap.entries())
 												{
 													(post.data.tags ?? []).map((tag) => (
 														<li>
-															<a href={`/blog/tags/${tag}/`}>{tag}</a>
+															<a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
 														</li>
 													))
 												}
@@ -271,14 +272,14 @@ const sidebarTags = Array.from(tagMap.entries())
 					<section class="sidebar-block">
 						<div class="sidebar-head">
 							<h2>
-								<a href="/blog/collections/">{BLOG_PAGE.collectionsTitle}</a>
+								<a href={withBase('/blog/collections/')}>{BLOG_PAGE.collectionsTitle}</a>
 							</h2>
 						</div>
 						<ul class="collection-list">
 							{
 								collectionItems.map((item) => (
 									<li>
-										<a href={`/blog/collections/${item.title}/`}>
+										<a href={withBase(`/blog/collections/${item.title}/`)}>
 											<p class="collection-title">{item.title}</p>
 											<p class="collection-desc">{item.description}</p>
 										</a>
@@ -290,12 +291,12 @@ const sidebarTags = Array.from(tagMap.entries())
 					<section class="sidebar-block">
 						<div class="sidebar-head">
 							<h2>{BLOG_PAGE.tagsTitle}</h2>
-							<a href="/blog/tags/">View all →</a>
+							<a href={withBase('/blog/tags/')}>View all →</a>
 						</div>
 						<div class="tags-wrap">
 							{
 								sidebarTags.map((tag) => (
-									<a href={`/blog/tags/${tag}/`}>{tag}</a>
+									<a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
 								))
 							}
 						</div>

@@ -3,12 +3,13 @@ import { SITE_TITLE, SOCIAL_LINKS } from '../consts';
 import HeaderLink from './HeaderLink.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import SocialIcon from './SocialIcon.astro';
+import { withBase } from '../utils/withBase';
 ---
 
 <div class="header-placeholder"></div>
 <header id="site-header">
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<h2><a href={withBase('/')}>{SITE_TITLE}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/blog">Blog</HeaderLink>

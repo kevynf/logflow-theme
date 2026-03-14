@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import GitHubContribute from '../components/GitHubContribute.astro';
 import Header from '../components/Header.astro';
 import { BLOG_PAGE, HOME_PROFILE, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { withBase } from '../utils/withBase';
 
 const allPosts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -210,7 +211,7 @@ const contentStyle = `--home-posts-column: ${HOME_PROFILE.homePostsColumnRatio ?
 				<div class="about-snippet">
 					<h2 class="about-title">About</h2>
 					<p>{aboutExcerpt}</p>
-					<a href="/about">Read full introduction</a>
+					<a href={withBase('/about')}>Read full introduction</a>
 				</div>
 			</section>
 
@@ -221,7 +222,7 @@ const contentStyle = `--home-posts-column: ${HOME_PROFILE.homePostsColumnRatio ?
 						{
 							posts.map((post) => (
 								<li>
-									<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+									<a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
 									<time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
 										{post.data.pubDate.toISOString().slice(5, 10)}
 									</time>
@@ -242,7 +243,7 @@ const contentStyle = `--home-posts-column: ${HOME_PROFILE.homePostsColumnRatio ?
 										<a
 											class="tag-node"
 											style={`--tag-cloud-size: ${0.88 + (tag.count / maxTagCount) * 0.42}em;`}
-											href={`/blog/tags/${encodeURIComponent(tag.name)}/`}
+											href={withBase(`/blog/tags/${encodeURIComponent(tag.name)}/`)}
 										>
 											{tag.name}
 										</a>
