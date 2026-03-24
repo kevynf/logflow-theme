@@ -1,0 +1,49 @@
+name: Sync Main to Demo
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync Demo Branch
+        run: |
+          # 1. 切换到 demo 分支并备份特有配置
+          git checkout demo
+          if [ -f .github/workflows/deploy.yml ]; then
+            cp .github/workflows/deploy.yml deploy_backup.yml
+          fi
+          
+          # 2. 将 demo 重置为 main 的最新状态
+          git reset --hard origin/main
+          
+          # 3. 恢复部署配置
+          if [ -f deploy_backup.yml ]; then
+            mkdir -p .github/workflows
+            mv deploy_backup.yml .github/workflows/deploy.yml
+          fi
+          
+          # 4. 针对 Demo 站点的子路径部署修改配置
+          # 将 base: '/' 替换为 demo 站点的子路径
+          sed -i "s|base: '/'|base: '/logflow-theme'|g" astro.config.mjs
+          # 将 site: SITE_URL 替换为 GitHub Pages 的根域名
+          sed -i "s|site: SITE_URL|site: 'https://kevynf.github.io'|g" astro.config.mjs
+          
+          # 5. 提交并强制推送到 demo 分支
+          git add .
+          git commit -m "Auto sync demo from main: $(date +'%Y-%m-%d %H:%M:%S')"
+          git push origin demo --force

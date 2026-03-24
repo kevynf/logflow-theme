@@ -1,95 +1,102 @@
 ---
-import { Image } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import CommentSection from '../components/CommentSection.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import CommentSection from "../components/CommentSection.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import SiteLayout from "./SiteLayout.astro";
 
-type BlogPostData = CollectionEntry<'blog'>['data'];
+type BlogPostData = CollectionEntry<"blog">["data"];
 
 interface Props extends BlogPostData {
-	enableComments?: boolean;
+  enableComments?: boolean;
 }
 
-const { title, description, pubDate, updatedDate, heroImage, enableComments = false } = Astro.props;
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  heroImage,
+  enableComments = false,
+} = Astro.props;
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 0.75em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 0.8em;
-				padding: 0.4em 0 0.7em;
-				text-align: left;
-				line-height: 1.25;
-			}
-			.title h1 {
-				margin: 0 0 0.4em;
-				font-size: 1.35rem;
-				line-height: 1.25;
-			}
-			.date {
-				margin-bottom: 0.45em;
-				font-size: 0.92em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
-
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose content-prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-					{enableComments && <CommentSection />}
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout title={title} description={description} lang="en">
+  <Fragment slot="head">
+    <style>
+      :global(main) {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: clip;
+      }
+      article {
+        width: 100%;
+        min-width: 0;
+      }
+      .hero-image {
+        width: 100%;
+      }
+      .hero-image img {
+        display: block;
+        margin: 0 auto;
+        border-radius: 12px;
+        box-shadow: var(--box-shadow);
+      }
+      .prose {
+        width: var(--page-max-width);
+        max-width: calc(
+          100% - var(--surface-inline-padding) - var(--surface-inline-padding)
+        );
+        margin: auto;
+        padding: 0.75em 0;
+        min-width: 0;
+        overflow-x: clip;
+        color: rgb(var(--gray-dark));
+      }
+      .title {
+        margin-bottom: 0.8em;
+        padding: 0.4em 0 0.7em;
+        text-align: left;
+        line-height: 1.25;
+      }
+      .title h1 {
+        margin: 0 0 0.4em;
+        font-size: 1.35rem;
+        line-height: 1.25;
+      }
+      .date {
+        margin-bottom: 0.45em;
+        font-size: 0.92em;
+        color: rgb(var(--gray));
+      }
+      .last-updated-on {
+        font-style: italic;
+      }
+    </style>
+  </Fragment>
+  <article>
+    <div class="hero-image">
+      {heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+    </div>
+    <div class="prose content-prose">
+      <div class="title">
+        <div class="date">
+          <FormattedDate date={pubDate} />
+          {
+            updatedDate && (
+              <div class="last-updated-on">
+                Last updated on <FormattedDate date={updatedDate} />
+              </div>
+            )
+          }
+        </div>
+        <h1>{title}</h1>
+        <hr />
+      </div>
+      <slot />
+      {enableComments && <CommentSection />}
+    </div>
+  </article>
+</SiteLayout>

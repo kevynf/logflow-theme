@@ -1,41 +1,83 @@
 ---
-import { GH_CONTRIBUTE } from '../consts';
-import GitHubCalendarWidget from './GitHubCalendarWidget';
+import { GH_CONTRIBUTE } from "../consts";
+import GitHubCalendarWidget from "./GitHubCalendarWidget";
 ---
 
 <section class="gh-contribute">
-	<div class="section-head">
-		<h2>{GH_CONTRIBUTE.title}</h2>
-		<p>{GH_CONTRIBUTE.description}</p>
-	</div>
-	<GitHubCalendarWidget
-		client:load
-		username={GH_CONTRIBUTE.username}
-		errorMessage={GH_CONTRIBUTE.errorMessage}
-	/>
+  <div class="section-head">
+    <h2>{GH_CONTRIBUTE.title}</h2>
+    <p>{GH_CONTRIBUTE.description}</p>
+  </div>
+  <GitHubCalendarWidget
+    client:load
+    username={GH_CONTRIBUTE.username}
+    errorMessage={GH_CONTRIBUTE.errorMessage}
+  />
 </section>
 
 <style>
-	.gh-contribute {
-		margin-top: 0;
-		width: 100%;
-	}
-	.section-head h2 {
-		margin-bottom: 0.35rem;
-		font-size: 1.25rem;
-	}
-	.section-head p {
-		margin: 0 0 0.75rem;
-		color: rgb(var(--gray));
-		font-size: 1em;
-	}
-	:global(.gh-contribute .react-activity-calendar__count) {
-		color: rgb(var(--black));
-	}
-	:global(.gh-contribute .react-activity-calendar__legend-colors rect) {
-		rx: 2px;
-	}
-	:global(.gh-contribute .react-activity-calendar__scroll-container) {
-		overflow-x: hidden;
-	}
+  .gh-contribute {
+    margin-top: 0;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  :global(.gh-contribute .gh-calendar-root) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  :global(.gh-contribute .gh-calendar-viewport) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  :global(.gh-contribute .gh-calendar-track) {
+    width: max-content;
+    min-width: 100%;
+  }
+  .section-head h2 {
+    margin-bottom: 0.35rem;
+    font-size: 1.25rem;
+  }
+  .section-head p {
+    margin: 0 0 0.75rem;
+    color: rgb(var(--gray));
+    font-size: 1em;
+  }
+  :global(.gh-contribute .react-activity-calendar__count) {
+    color: rgb(var(--black));
+  }
+  :global(.gh-contribute .react-activity-calendar) {
+    width: max-content;
+    max-width: none;
+    min-width: 100%;
+  }
+  :global(.gh-contribute article.react-activity-calendar) {
+    width: max-content;
+    max-width: none;
+    min-width: 100%;
+  }
+  :global(.gh-contribute .react-activity-calendar svg) {
+    display: block;
+    width: auto;
+    max-width: none;
+    height: auto;
+  }
+  :global(.gh-contribute .react-activity-calendar__legend-colors rect) {
+    rx: 2px;
+  }
+  :global(.gh-contribute .react-activity-calendar__scroll-container) {
+    width: max-content;
+    max-width: none;
+    overflow-x: visible;
+    overflow-y: hidden;
+  }
 </style>

@@ -37,7 +37,7 @@ tags:
 
 **功能**
 
-- 渲染顶部导航、社交链接与主题切换按钮。
+- 渲染顶部导航、社交链接与主题切换按钮。支持移动端响应式菜单。
 
 **使用方法**
 
@@ -47,7 +47,8 @@ tags:
 
 **consts.ts 如何设置**
 
-- 关联项：`SITE_TITLE`、`SOCIAL_LINKS`
+- 关联项：`SITE_TITLE`、`NAV_LINKS`、`SOCIAL_LINKS`
+- `NAV_LINKS` 控制导航项。
 - `SOCIAL_LINKS` 每项结构：
   - `label`: 文本标签
   - `href`: 外链地址
@@ -220,15 +221,17 @@ tags:
 - 关联项：`COMMENTS`
 - 关键字段：
   - `enabled`
-  - `provider`
   - `repo`
   - `repoId`
   - `category`
   - `categoryId`
   - `mapping`
-  - `themeLight`
-  - `themeDark`
+  - `strict`
+  - `reactionsEnabled`
+  - `emitMetadata`
+  - `inputPosition`
   - `lang`
+  - `loading`
 
 **可选参数**
 

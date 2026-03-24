@@ -24,11 +24,31 @@ tags:
 - 用途：全局描述，影响首页文案与 SEO 描述字段。
 - 建议：控制在 120~160 字符以内。
 
+## SITE_URL
+
+- 默认值：`https://logflow-theme.vercel.app`
+- 用途：站点正式 URL，用于 sitemap、RSS 等绝对链接生成。
+- 建议：部署后务必修改为你的真实域名。
+
 ## COPYRIGHT_NAME
 
 - 默认值：`LogFlow Theme`
 - 用途：页脚版权名称。
 - 建议：可填写个人名、组织名或品牌名。
+
+## NAV_LINKS
+
+- 用途：控制 Header 导航栏与移动端菜单的链接。
+- 数据结构：
+
+```ts
+{
+  href: string;
+  label: string;
+}
+```
+
+- 建议：新增页面（如 `src/pages/notes.astro`）后，需在此追加对应配置才会显示在导航中。
 
 ## SOCIAL_LINKS
 
@@ -51,20 +71,23 @@ tags:
 ## FRIEND_LINKS
 
 - 用途：Friends 页面友链卡片数据源。
+- 位置：已提取到 `src/config/friend-links.ts`，由 `consts.ts` 导出。
 - 数据结构：
 
 ```ts
 {
-	name: string;
-	url: string;
-	avatar: string;
-	description: string;
+  name: string;
+  link?: string; // 推荐使用 link
+  url?: string;  // 兼容旧版 url
+  avatar?: string;
+  desc?: string; // 推荐使用 desc
+  description?: string; // 兼容旧版 description
 }
 ```
 
 - 建议：
   - `avatar` 使用站点 favicon 或清晰头像地址。
-  - `description` 用一句话说明站点定位。
+  - `desc` 用一句话说明站点定位。
 
 ## GH_CONTRIBUTE
 
@@ -72,7 +95,7 @@ tags:
 - 字段说明：
   - `title`：区块标题
   - `description`：区块描述
-  - `username`：GitHub 用户名
+  - `username`：GitHub 用户名（如 `example`）
   - `profileUrl`：GitHub 主页链接
   - `errorMessage`：加载失败时提示文案
 
@@ -80,14 +103,14 @@ tags:
 
 - 用途：控制首页头像区、昵称区、标语区和部分布局参数。
 - 字段说明：
-  - `avatarSrc`：头像地址
+  - `avatarSrc`：头像地址（外链或 `/favicon.svg` 等）
   - `avatarAlt`：头像替代文本
   - `nickname`：昵称
   - `nicknameFontSize`：昵称字号（如 `2rem`）
   - `tagline`：标语文案
   - `taglineFontSize`：标语字号（如 `1em`）
   - `taglineItalic`：是否斜体（`true/false`）
-  - `homePostsColumnRatio`：首页左右列比例（如 `1fr`、`0.9fr`）
+  - `homePostsColumnRatio`：首页左右列比例（如 `1fr`）
   - `homeTagsMinWidth`：标签区域最小宽度（如 `300px`）
   - `aboutExcerptLength`：About 摘要截断长度
   - `recentPostsLimit`：首页最新文章数量
@@ -105,25 +128,26 @@ tags:
 - 用途：评论系统总配置，当前支持 Giscus。
 - 字段说明：
   - `enabled`：评论开关，`false` 时不加载评论
-  - `provider`：评论提供方，保持 `giscus`
   - `repo`：仓库名，格式 `owner/repo`
   - `repoId`：仓库 ID
   - `category`：Discussion 分类名
   - `categoryId`：分类 ID
   - `mapping`：文章与讨论串映射方式
-  - `themeLight`：浅色主题
-  - `themeDark`：深色主题
-  - `lang`：评论语言
+  - `strict`：是否启用严格匹配（`0` 或 `1`）
+  - `reactionsEnabled`：是否开启回应（`0` 或 `1`）
+  - `emitMetadata`：是否发送元数据（`0` 或 `1`）
+  - `inputPosition`：输入框位置（`top` 或 `bottom`）
+  - `lang`：评论语言（如 `zh-CN`）
+  - `loading`：加载方式（如 `lazy`）
 
 - `mapping` 常见可选值：
-  - `pathname`
+  - `pathname` (推荐)
   - `title`
   - `url`
-  - `og:title`
 
 ## 推荐修改顺序
 
-1. 先改 `SITE_TITLE`、`SITE_DESCRIPTION`、`COPYRIGHT_NAME`
-2. 再改 `SOCIAL_LINKS`、`HOME_PROFILE`
+1. 先改 `SITE_TITLE`、`SITE_DESCRIPTION`、`SITE_URL`、`COPYRIGHT_NAME`
+2. 再改 `SOCIAL_LINKS`、`NAV_LINKS`、`HOME_PROFILE`
 3. 需要评论时再改 `COMMENTS`
 4. 最后补充 `FRIEND_LINKS` 与 `GH_CONTRIBUTE`

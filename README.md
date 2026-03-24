@@ -4,31 +4,33 @@
 
 - 文章列表、标签页、合集页、按年份归档页
 - About、Friends 页面与社交链接
+- 移动端响应式菜单支持
 - 暗色模式切换
-- Giscus 评论组件（可开关）
+- Giscus 评论组件（按需启用）
 - Markdown + MDX 内容支持
 
 ## 亮点
 
 - 开箱即用的内容结构：文章、标签、合集、年份归档完整闭环
-- 配置集中在 `src/consts.ts`：站点信息、首页卡片、评论与社交一处维护
+- 配置集中在 `src/consts.ts`：站点信息、首页卡片、导航链接、评论与社交一处维护
+- 友链独立维护：在 `src/config/friend-links.ts` 中管理友链数据
 - 文档示例齐全：组件说明、Giscus、Frontmatter、MDX 样式均有可直接参考文章
 - 评论系统可渐进启用：默认关闭，填入参数后即可启用 Giscus
-- 主题体验完整：亮暗模式切换 + GitHub 贡献图展示
+- 主题体验完整：亮暗模式切换 + GitHub 贡献图展示 + 移动端菜单优化
 
 ## 截图预览
 
-### 首页
+### 首页 (深色模式)
 
-![首页预览](public/screenshots/home-light.png)
+![首页预览 (深色)](public/screenshots/home-dark.png)
 
-### 文章页
+### 文章页 (深色模式)
 
-![文章页预览](public/screenshots/post-light.png)
+![文章页预览 (深色)](public/screenshots/post-dark.png)
 
-### 暗色模式
+### 浅色模式
 
-![暗色模式预览](public/screenshots/home-dark.png)
+![浅色模式预览](public/screenshots/home-light.png)
 
 ### Header 滚动动效
 
@@ -63,16 +65,19 @@ npm run dev
 
 - `SITE_TITLE`：站点标题
 - `SITE_DESCRIPTION`：站点描述（SEO 与首页文案）
+- `SITE_URL`：站点正式域名（用于生成 sitemap、RSS 链接等）
 - `COPYRIGHT_NAME`：页脚版权名称
-- `SOCIAL_LINKS`：顶部/底部社交链接
-- `HOME_PROFILE`：首页头像、昵称、标语等
-- `GH_CONTRIBUTE`：GitHub 贡献图用户名与文案
-- `COMMENTS`：Giscus 评论配置
+- `NAV_LINKS`：Header 导航与移动端菜单链接
+- `SOCIAL_LINKS`：顶部/底部社交图标链接
+- `HOME_PROFILE`：首页头像、昵称、标语、布局比例等
+- `GH_CONTRIBUTE`：GitHub 贡献图用户名与显示文案
+- `COMMENTS`：Giscus 评论系统相关参数
 
-建议同时修改：
+建议同时：
 
-- `astro.config.mjs` 中的 `site` 为你的正式域名
-- `src/content/about/index.md` 为你的 About 页面内容
+- 在 `src/config/friend-links.ts` 中填入你的友链数据
+- 在 `src/content/about/index.md` 中替换为你的个人介绍
+- 在 `astro.config.mjs` 中更新 `site` 配置项（通常由 `consts.ts` 的 `SITE_URL` 自动读取）
 
 ## 内容编写
 
@@ -104,12 +109,12 @@ tags:
 
 ## Giscus 评论接入
 
-1. 将仓库设为公开并开启 Discussions
-2. 在 giscus.app 生成配置参数
-3. 填入 `src/consts.ts` 的 `COMMENTS`
-4. 保持文章页布局启用 `enableComments={true}`
+1. 确保你的仓库是公开的并开启了 Discussions
+2. 访问 [giscus.app](https://giscus.app/zh-CN) 生成配置参数
+3. 在 `src/consts.ts` 的 `COMMENTS` 中填入生成的 `repoId`、`categoryId` 等参数
+4. 评论功能默认是全局开关，如需在单篇文章中启用，请在文章详情页布局中确认 `enableComments={true}`
 
-仓库内已包含一篇独立示例文章：`giscus-configuration-quickstart.md`，可直接参考。
+详细配置流程可参考项目内置文章：`giscus-configuration-quickstart.md`。
 
 ## 示例内容
 

@@ -1,309 +1,327 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { BLOG_PAGE, SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { withBase } from '../../utils/withBase';
+import { getCollection } from "astro:content";
+import FormattedDate from "../../components/FormattedDate.astro";
+import { BLOG_PAGE, SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { withBase } from "../../utils/withBase";
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 const visiblePosts = posts;
 const totalPosts = posts.length;
 
 const calcReadMinutes = (body: string) => {
-	const plain = body.replace(/[#>*`[\]\(\)\-_]/g, ' ').trim();
-	const words = plain.length === 0 ? 0 : plain.split(/\s+/).length;
-	return Math.max(1, Math.ceil(words / 220));
+  const plain = body.replace(/[#>*`[\]\(\)\-_]/g, " ").trim();
+  const words = plain.length === 0 ? 0 : plain.split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 220));
 };
 
-const collectionMap = new Map<string, { title: string; description: string; count: number }>();
+const collectionMap = new Map<
+  string,
+  { title: string; description: string; count: number }
+>();
 const tagMap = new Map<string, number>();
 
 for (const post of posts) {
-	if (post.data.collection) {
-		const existing = collectionMap.get(post.data.collection);
-		const description = post.data.collectionDescription ?? '';
-		if (existing) {
-			existing.count += 1;
-			if (!existing.description && description) {
-				existing.description = description;
-			}
-		} else {
-			collectionMap.set(post.data.collection, {
-				title: post.data.collection,
-				description,
-				count: 1,
-			});
-		}
-	}
-	for (const tag of post.data.tags ?? []) {
-		tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1);
-	}
+  if (post.data.collection) {
+    const existing = collectionMap.get(post.data.collection);
+    const description = post.data.collectionDescription ?? "";
+    if (existing) {
+      existing.count += 1;
+      if (!existing.description && description) {
+        existing.description = description;
+      }
+    } else {
+      collectionMap.set(post.data.collection, {
+        title: post.data.collection,
+        description,
+        count: 1,
+      });
+    }
+  }
+  for (const tag of post.data.tags ?? []) {
+    tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1);
+  }
 }
 
-const collectionItems = Array.from(collectionMap.values()).sort((a, b) => b.count - a.count);
+const collectionItems = Array.from(collectionMap.values()).sort(
+  (a, b) => b.count - a.count,
+);
 const sidebarTags = Array.from(tagMap.entries())
-	.sort((a, b) => b[1] - a[1])
-	.map(([tag]) => tag);
+  .sort((a, b) => b[1] - a[1])
+  .map(([tag]) => tag);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			.blog-layout {
-				display: flex;
-				gap: 1rem;
-				align-items: flex-start;
-			}
-			.posts-column {
-				flex: 1 1 66%;
-				min-width: 0;
-			}
-			.sidebar-column {
-				flex: 1 1 34%;
-				min-width: 280px;
-			}
-			.list-head {
-				display: block;
-				margin-bottom: 0.9rem;
-			}
-			.list-head h1 {
-				font-size: 1.15rem;
-				margin: 0;
-				line-height: 1.2;
-			}
-			.list-head p {
-				margin: 0;
-				font-size: 0.95em;
-				color: rgb(var(--gray));
-			}
-			.list-head-meta {
-				margin-top: 0.25rem;
-			}
-			.list-head-link {
-				margin-top: 0.2rem;
-			}
-			.list-head-link a,
-			.sidebar-head a {
-				font-size: 0.92em;
-				font-weight: 600;
-				text-decoration: none;
-			}
-			.post-list {
-				list-style: none;
-				margin: 0;
-				padding: 0;
-				display: grid;
-				gap: 0;
-			}
-			.post-card {
-				padding: 0.65rem 0;
-			}
-			.post-card + .post-card {
-				padding-top: 0.65rem;
-			}
-			.post-body {
-				display: grid;
-				gap: 0.34rem;
-			}
-			.post-head {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				gap: 0.8rem;
-			}
-			.post-meta {
-				display: flex;
-				align-items: center;
-				gap: 0.5rem;
-				font-size: 0.9em;
-				color: rgb(var(--gray));
-			}
-			.post-title {
-				display: block;
-				text-decoration: none;
-				font-size: 1.05em;
-				font-weight: 700;
-				color: rgb(var(--black));
-				line-height: 1.35;
-				margin: 0;
-				min-width: 0;
-			}
-			.post-date {
-				font-size: 0.9em;
-				color: rgb(var(--gray));
-				white-space: nowrap;
-			}
-			.post-desc {
-				margin: 0;
-				font-size: 0.95em;
-				color: rgb(var(--gray));
-			}
-			.post-footer {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				gap: 0.75rem;
-			}
-			.tag-list {
-				list-style: none;
-				display: flex;
-				flex-wrap: wrap;
-				gap: 0.45rem;
-				margin: 0;
-				padding: 0;
-			}
-			.tag-list a {
-				font-size: 0.84em;
-				text-decoration: none;
-			}
-			.sidebar-block {
-				padding: 0;
-			}
-			.sidebar-block + .sidebar-block {
-				margin-top: 0.75rem;
-			}
-			.sidebar-head {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				margin-bottom: 0.55rem;
-			}
-			.sidebar-head h2 {
-				margin: 0;
-				font-size: 1.15rem;
-				line-height: 1.2;
-			}
-			.collection-list {
-				list-style: none;
-				margin: 0;
-				padding: 0;
-				display: grid;
-				gap: 0.55rem;
-			}
-			.collection-list a {
-				display: block;
-				padding: 0.15rem 0;
-				text-decoration: none;
-			}
-			.collection-title {
-				font-size: 1em;
-				font-weight: 700;
-				margin: 0;
-				color: rgb(var(--black));
-			}
-			.collection-desc {
-				margin: 0.2rem 0 0;
-				font-size: 0.9em;
-				color: rgb(var(--gray));
-			}
-			.tags-wrap {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 0.7rem;
-			}
-			.tags-wrap a {
-				text-decoration: none;
-				font-size: 0.88em;
-			}
-			@media (max-width: 720px) {
-				.blog-layout {
-					flex-direction: column;
-				}
-				.sidebar-column {
-					width: 100%;
-					min-width: 0;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section class="blog-layout">
-				<div class="posts-column">
-					<div class="list-head">
-						<h1>{BLOG_PAGE.title}</h1>
-						<p class="list-head-meta">Page 1 · Showing {visiblePosts.length} of {totalPosts} posts</p>
-						<p class="list-head-link">
-							<a href={withBase('/blog/years/')}>View all posts by years →</a>
-						</p>
-					</div>
-					<ul class="post-list">
-						{
-							visiblePosts.map((post) => (
-								<li class="post-card">
-									<div class="post-body">
-										<div class="post-head">
-											<a class="post-title" href={withBase(`/blog/${post.id}/`)}>
-												{post.data.title}
-											</a>
-											<time class="post-date" datetime={post.data.pubDate.toISOString().slice(0, 10)}>
-												<FormattedDate date={post.data.pubDate} />
-											</time>
-										</div>
-										<p class="post-desc">{post.data.description}</p>
-										<div class="post-footer">
-											<div class="post-meta">
-												<span>{calcReadMinutes(post.body ?? '')} min read</span>
-											</div>
-											<ul class="tag-list">
-												{
-													(post.data.tags ?? []).map((tag) => (
-														<li>
-															<a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
-														</li>
-													))
-												}
-											</ul>
-										</div>
-									</div>
-								</li>
-							))
-						}
-					</ul>
-				</div>
-				<aside class="sidebar-column">
-					<section class="sidebar-block">
-						<div class="sidebar-head">
-							<h2>
-								<a href={withBase('/blog/collections/')}>{BLOG_PAGE.collectionsTitle}</a>
-							</h2>
-						</div>
-						<ul class="collection-list">
-							{
-								collectionItems.map((item) => (
-									<li>
-										<a href={withBase(`/blog/collections/${item.title}/`)}>
-											<p class="collection-title">{item.title}</p>
-											<p class="collection-desc">{item.description}</p>
-										</a>
-									</li>
-								))
-							}
-						</ul>
-					</section>
-					<section class="sidebar-block">
-						<div class="sidebar-head">
-							<h2>{BLOG_PAGE.tagsTitle}</h2>
-							<a href={withBase('/blog/tags/')}>View all →</a>
-						</div>
-						<div class="tags-wrap">
-							{
-								sidebarTags.map((tag) => (
-									<a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
-								))
-							}
-						</div>
-					</section>
-				</aside>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout title={SITE_TITLE} description={SITE_DESCRIPTION} lang="en">
+  <Fragment slot="head">
+    <style>
+      .blog-layout {
+        display: flex;
+        gap: var(--section-gap-x);
+        align-items: flex-start;
+      }
+      .posts-column {
+        flex: 1 1 66%;
+        min-width: 0;
+      }
+      .sidebar-column {
+        flex: 1 1 34%;
+        min-width: 280px;
+        border-left: var(--section-divider-width) solid
+          var(--section-divider-color);
+        padding-left: var(--gap-xl);
+      }
+      .list-head {
+        display: block;
+        margin-bottom: 0.9rem;
+      }
+      .list-head h1 {
+        font-size: 1.15rem;
+        margin: 0;
+        line-height: 1.2;
+        color: rgb(var(--black));
+      }
+      .list-head-meta {
+        margin: 0.25rem 0 0;
+        font-size: 0.95em;
+        color: rgb(var(--gray));
+      }
+      .list-head-link {
+        margin-top: 0.2rem;
+      }
+      .list-head-link a,
+      .sidebar-head a {
+        font-size: 0.92em;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .post-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--gap-0);
+      }
+      .post-card {
+        padding: 0.65rem 0;
+      }
+      .post-card + .post-card {
+        border-top: var(--section-divider-width) solid
+          var(--section-divider-color);
+        padding-top: 0.65rem;
+      }
+      .post-body {
+        display: grid;
+        gap: var(--gap-sm-minus);
+      }
+      .post-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: baseline;
+        column-gap: var(--gap-lg);
+      }
+      .post-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--gap-md);
+        font-size: 0.9em;
+        color: rgb(var(--gray));
+      }
+      .post-title {
+        display: block;
+        text-decoration: none;
+        font-size: 1.05em;
+        font-weight: 700;
+        color: rgb(var(--black));
+        line-height: 1.35;
+        margin: 0;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+      .post-date {
+        font-size: 0.9em;
+        color: rgb(var(--gray));
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .post-desc {
+        margin: 0;
+        font-size: 0.95em;
+        color: rgb(var(--gray));
+      }
+      .post-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: var(--gap-2xl);
+      }
+      .tag-list {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--gap-sm-plus);
+        margin: 0;
+        padding: 0;
+      }
+      .tag-list a {
+        font-size: 0.84em;
+        text-decoration: none;
+      }
+      .sidebar-block {
+        padding: 0;
+      }
+      .sidebar-block + .sidebar-block {
+        margin-top: 0.75rem;
+        border-top: var(--section-divider-width) solid
+          var(--section-divider-color);
+        padding-top: 0.75rem;
+      }
+      .sidebar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.55rem;
+      }
+      .sidebar-head h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        line-height: 1.2;
+      }
+      .collection-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: var(--gap-0);
+      }
+      .collection-list li + li {
+        border-top: var(--section-divider-width) solid
+          var(--section-divider-color);
+      }
+      .collection-list a {
+        display: block;
+        padding: 0.55rem 0;
+        text-decoration: none;
+      }
+      .collection-title {
+        font-size: 1em;
+        font-weight: 700;
+        margin: 0;
+        color: rgb(var(--black));
+      }
+      .collection-desc {
+        margin: 0.2rem 0 0;
+        font-size: 0.9em;
+        color: rgb(var(--gray));
+      }
+      .tags-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--gap-xl);
+      }
+      .tags-wrap a {
+        text-decoration: none;
+        font-size: 0.88em;
+      }
+      @media (max-width: 720px) {
+        .blog-layout {
+          flex-direction: column;
+        }
+        .sidebar-column {
+          width: 100%;
+          min-width: 0;
+          border-left: 0;
+          border-top: var(--section-divider-width) solid
+            var(--section-divider-color);
+          padding-left: 0;
+          padding-top: var(--gap-xl);
+        }
+      }
+    </style>
+  </Fragment>
+  <section class="blog-layout">
+    <section class="posts-column">
+      <div class="list-head">
+        <h1>{BLOG_PAGE.title}</h1>
+        <p class="list-head-meta">
+          Page 1 · Showing {visiblePosts.length} of {totalPosts} posts
+        </p>
+        <p class="list-head-link">
+          <a href={withBase("/blog/years/")}>View all posts by years →</a>
+        </p>
+      </div>
+      <ul class="post-list">
+        {
+          visiblePosts.map((post) => (
+            <li class="post-card">
+              <div class="post-body">
+                <div class="post-head">
+                  <a class="post-title" href={withBase(`/blog/${post.id}/`)}>
+                    {post.data.title}
+                  </a>
+                  <time
+                    class="post-date"
+                    datetime={post.data.pubDate.toISOString().slice(0, 10)}
+                  >
+                    <FormattedDate date={post.data.pubDate} />
+                  </time>
+                </div>
+                <p class="post-desc">{post.data.description}</p>
+                <div class="post-footer">
+                  <div class="post-meta">
+                    <span>{calcReadMinutes(post.body ?? "")} min read</span>
+                  </div>
+                  <ul class="tag-list">
+                    {(post.data.tags ?? []).map((tag) => (
+                      <li>
+                        <a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+    <aside class="sidebar-column">
+      <section class="sidebar-block">
+        <div class="sidebar-head">
+          <h2>
+            <a href={withBase("/blog/collections/")}
+              >{BLOG_PAGE.collectionsTitle}</a
+            >
+          </h2>
+        </div>
+        <ul class="collection-list">
+          {
+            collectionItems.map((item) => (
+              <li>
+                <a href={withBase(`/blog/collections/${item.title}/`)}>
+                  <p class="collection-title">{item.title}</p>
+                  <p class="collection-desc">{item.description}</p>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+      <section class="sidebar-block">
+        <div class="sidebar-head">
+          <h2>{BLOG_PAGE.tagsTitle}</h2>
+          <a href={withBase("/blog/tags/")}>View all →</a>
+        </div>
+        <div class="tags-wrap">
+          {
+            sidebarTags.map((tag) => (
+              <a href={withBase(`/blog/tags/${tag}/`)}>{tag}</a>
+            ))
+          }
+        </div>
+      </section>
+    </aside>
+  </section>
+</SiteLayout>

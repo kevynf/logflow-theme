@@ -1,83 +1,137 @@
 ---
-import { SOCIAL_LINKS, COPYRIGHT_NAME } from '../consts';
-import SocialIcon from './SocialIcon.astro';
+import { SOCIAL_LINKS, COPYRIGHT_NAME } from "../consts";
+import SocialIcon from "./SocialIcon.astro";
 
 const today = new Date();
 const builtAt = new Date();
-const builtAtParts = new Intl.DateTimeFormat('zh-CN', {
-	timeZone: 'Asia/Shanghai',
-	year: 'numeric',
-	month: '2-digit',
-	day: '2-digit',
-	hour: '2-digit',
-	minute: '2-digit',
-	hour12: false,
+const builtAtParts = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
 })
-	.formatToParts(builtAt)
-	.reduce<Record<string, string>>((acc, part) => {
-		if (part.type !== 'literal') {
-			acc[part.type] = part.value;
-		}
-		return acc;
-	}, {});
-const builtAtLabel = `${builtAtParts.year}-${builtAtParts.month}-${builtAtParts.day} ${builtAtParts.hour}:${builtAtParts.minute} UTC+08:00 (Asia/Shanghai)`;
+  .formatToParts(builtAt)
+  .reduce<Record<string, string>>((acc, part) => {
+    if (part.type !== "literal") {
+      acc[part.type] = part.value;
+    }
+    return acc;
+  }, {});
+const builtAtShort = `${builtAtParts.year}-${builtAtParts.month}-${builtAtParts.day} ${builtAtParts.hour}:${builtAtParts.minute}`;
+const builtAtFull = `${builtAtShort} UTC+08:00 (Asia/Shanghai)`;
 ---
 
-<footer>
-	<div class="footer-meta">
-		<p>&copy; {today.getFullYear()} {COPYRIGHT_NAME}. All rights reserved.</p>
-		<p class="build-info">Last updated at build: {builtAtLabel}</p>
-	</div>
-	<div class="social-links">
-		{
-			SOCIAL_LINKS.map((link) => (
-				<a href={link.href} target="_blank" rel="noopener noreferrer">
-					<span class="sr-only">{link.label}</span>
-					<SocialIcon icon={link.icon} />
-				</a>
-			))
-		}
-	</div>
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-meta">
+      <p class="footer-line">
+        <span
+          >&copy; {today.getFullYear()}
+          {COPYRIGHT_NAME}. All rights reserved.</span
+        >
+        <span class="build-info">Last updated at build: {builtAtFull}.</span>
+      </p>
+    </div>
+    <div class="social-links">
+      {
+        SOCIAL_LINKS.map((link) => (
+          <a href={link.href} target="_blank" rel="noopener noreferrer">
+            <span class="sr-only">{link.label}</span>
+            <SocialIcon icon={link.icon} />
+          </a>
+        ))
+      }
+    </div>
+  </div>
 </footer>
 <style>
-	footer {
-		padding: 0.5em 1.5em;
-		background: transparent;
-		color: rgb(var(--gray));
-		text-align: center;
-		width: 100%;
-		max-width: 720px;
-		margin: 2em auto;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.footer-meta {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0;
-		text-align: left;
-		line-height: 1.2;
-	}
-	.footer-meta p {
-		margin: 0;
-	}
-	.build-info {
-		font-size: 0.78rem;
-		margin-top: 0;
-	}
-	.social-links {
-		display: flex;
-		justify-content: center;
-		gap: 0.5em;
-		margin-top: 0;
-	}
-	.social-links a {
-		text-decoration: none;
-		color: rgb(var(--gray));
-	}
-	.social-links a:hover {
-		color: rgb(var(--gray-dark));
-	}
+  .site-footer {
+    width: var(--page-max-width);
+    max-width: calc(100% - 1em);
+    margin: 0 auto;
+    padding: 0 0.5em 3em;
+  }
+
+  .footer-inner {
+    border-top: var(--section-divider-width) solid var(--section-divider-color);
+    padding-top: 3em;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--section-gap-x);
+    row-gap: var(--gap-2xl);
+    align-items: center;
+    color: rgb(var(--gray));
+    text-align: left;
+  }
+  .footer-meta {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--gap-md);
+    text-align: left;
+    line-height: 1.2;
+  }
+  .footer-meta p {
+    margin: 0;
+  }
+  .footer-line {
+    display: flex;
+    align-items: baseline;
+    gap: var(--gap-md);
+    flex-wrap: wrap;
+  }
+  .build-info {
+    font-size: 0.78rem;
+    margin-top: 0;
+  }
+  .social-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--gap-sm);
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+  .social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    text-decoration: none;
+    color: rgb(var(--gray));
+    border-radius: 999px;
+  }
+  .social-links a:hover {
+    color: rgb(var(--gray-dark));
+  }
+  .social-links a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 430px) {
+    .site-footer-spacer {
+      height: var(--surface-strip-sync-height, var(--surface-strip-min-height));
+    }
+
+    .footer-inner {
+      --surface-strip-pad-y: 0.5rem;
+      grid-template-columns: 1fr;
+    }
+    .build-info {
+      font-size: 0.75rem;
+    }
+    .social-links {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-footer-spacer {
+      transition: none;
+    }
+  }
 </style>

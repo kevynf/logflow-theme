@@ -1,32 +1,28 @@
 ---
-import { getEntry, render } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getEntry, render } from "astro:content";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import SiteLayout from "../layouts/SiteLayout.astro";
 
-const aboutEntry = await getEntry('about', 'index');
+const aboutEntry = await getEntry("about", "index");
 if (!aboutEntry) {
-	throw new Error('Missing about content file: src/content/about/index.md');
+  throw new Error("Missing about content file: src/content/about/index.md");
 }
 const { Content } = await render(aboutEntry);
 const pageTitle = `${aboutEntry.data.title} | ${SITE_TITLE}`;
 const pageDescription = aboutEntry.data.description ?? SITE_DESCRIPTION;
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={pageTitle} description={pageDescription} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<article class="content-prose">
-				<h1>{aboutEntry.data.title}</h1>
-				<Content />
-			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout title={pageTitle} description={pageDescription}>
+  <section class="about-block">
+    <article class="content-prose">
+      <h1>{aboutEntry.data.title}</h1>
+      <Content />
+    </article>
+  </section>
+</SiteLayout>
+
+<style>
+  .about-block {
+    width: 100%;
+  }
+</style>

@@ -1,237 +1,262 @@
 ---
-import { SITE_TITLE, SOCIAL_LINKS } from '../consts';
-import HeaderLink from './HeaderLink.astro';
-import ThemeToggle from './ThemeToggle.astro';
-import SocialIcon from './SocialIcon.astro';
-import { withBase } from '../utils/withBase';
+import { NAV_LINKS, SITE_TITLE } from "../consts";
+import { withBase } from "../utils/withBase";
+import HeaderLink from "./HeaderLink.astro";
+import ThemeToggle from "./ThemeToggle.astro";
 ---
 
-<div class="header-placeholder"></div>
-<header id="site-header">
-	<nav>
-		<h2><a href={withBase('/')}>{SITE_TITLE}</a></h2>
-		<div class="internal-links">
-			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/blog">Blog</HeaderLink>
-			<HeaderLink href="/friends">Friends</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
-			<div id="nav-indicator"></div>
-		</div>
-		<div class="actions">
-			<div class="social-links">
-				{
-					SOCIAL_LINKS.map((link) => (
-						<a href={link.href} target="_blank" rel="noopener noreferrer">
-							<span class="sr-only">{link.label}</span>
-							<SocialIcon icon={link.icon} />
-						</a>
-					))
-				}
-			</div>
-			<ThemeToggle />
-		</div>
-	</nav>
+<div id="header-sentinel" class="header-sentinel"></div>
+<header class="site-header" id="main-header">
+  <div class="header-inner">
+    <div class="header-row">
+      <a class="brand" href={withBase("/")}>{SITE_TITLE}</a>
+
+      <nav class="nav-links desktop-only" aria-label="Primary navigation">
+        {
+          NAV_LINKS.map((link) => (
+            <HeaderLink href={link.href} reserveText={link.label}>
+              {link.label}
+            </HeaderLink>
+          ))
+        }
+      </nav>
+
+      <div class="header-actions">
+        <ThemeToggle />
+        <button id="menu-toggle" class="menu-toggle mobile-only" aria-label="Toggle menu" aria-expanded="false">
+          <svg class="icon-menu" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg class="icon-close" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+
+    <nav id="mobile-nav" class="mobile-nav mobile-only" aria-label="Mobile navigation">
+      {
+        NAV_LINKS.map((link) => (
+          <HeaderLink href={link.href} reserveText={link.label}>
+            {link.label}
+          </HeaderLink>
+        ))
+      }
+    </nav>
+  </div>
 </header>
-<style>
-	header {
-		margin: 0 auto;
-		padding: 0.5em 1em;
-		background: transparent;
-		backdrop-filter: blur(0px);
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0), 0 0 0 1px rgba(255, 255, 255, 0) inset;
-		border: 1px solid rgba(255, 255, 255, 0);
-		position: fixed;
-		top: 0.5rem;
-		left: 0;
-		right: 0;
-		z-index: 100;
-		transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-		width: 100%;
-		max-width: 1000px;
-		box-sizing: border-box;
-		border-radius: 0;
-	}
-
-	.header-placeholder {
-		height: 3.5em; /* Header height + top margin */
-	}
-
-	header.scrolled {
-		top: 0.5rem;
-		width: calc(100% - 2em);
-		max-width: 768px;
-		border-radius: 16px;
-		background: var(--background-header);
-		backdrop-filter: blur(12px);
-		border: 1px solid var(--glass-border);
-		box-shadow: 0 4px 20px var(--glass-shadow), 0 0 0 1px var(--glow-color) inset;
-		padding: 0.25em 1.5em;
-	}
-
-	:global(.dark) header.scrolled {
-		background: var(--background-header);
-		box-shadow: 0 4px 20px var(--glass-shadow), 0 0 0 1px var(--glow-color) inset;
-	}
-
-	@media (max-width: 760px) {
-		header.scrolled {
-			max-width: calc(100% - 2em);
-		}
-	}
-
-	h2 {
-		margin: 0;
-		margin-right: auto;
-		font-size: 1em;
-	}
-
-	h2 a,
-	h2 a.active {
-		text-decoration: none;
-	}
-	nav {
-		display: flex;
-		align-items: center;
-		max-width: 1100px;
-		margin: 0 auto;
-	}
-	nav a {
-		padding: 0.25em 0.8em;
-		color: var(--black);
-		border-radius: 999px;
-		text-decoration: none;
-		transition: color 0.2s ease;
-		position: relative;
-		z-index: 2;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		line-height: 1;
-		height: 28px;
-		box-sizing: border-box;
-	}
-	nav a:hover {
-		color: var(--accent);
-	}
-	.internal-links {
-		display: flex;
-		align-items: center;
-		margin-right: 1em;
-		position: relative;
-	}
-	#nav-indicator {
-		position: absolute;
-		left: 0;
-		top: 0;
-		border-radius: 999px;
-		background-color: rgba(var(--gray), 0.15);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
-		border: 1px solid rgba(var(--gray), 0.2);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-		transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-		z-index: 1;
-		pointer-events: none;
-		opacity: 0;
-	}
-	.internal-links a {
-		font-size: 0.85em;
-	}
-	nav a.active {
-		color: var(--accent);
-	}
-	nav a.active:hover {
-		color: var(--accent);
-	}
-	.actions {
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-	}
-	.social-links {
-		display: flex;
-		gap: 0.5em;
-	}
-	.social-links a {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 28px;
-		padding: 0;
-		border-bottom: none;
-		border-radius: 50%;
-	}
-	.social-links a svg {
-		width: 20px;
-		height: 20px;
-	}
-	@media (max-width: 720px) {
-		.social-links {
-			display: none;
-		}
-	}
-</style>
 
 <script>
-	const header = document.querySelector('#site-header');
-	const handleScroll = () => {
-		if (window.scrollY > 50) {
-			header?.classList.add('scrolled');
-		} else {
-			header?.classList.remove('scrolled');
-		}
-	};
+  const header = document.getElementById('main-header');
+  const sentinel = document.getElementById('header-sentinel');
+  const menuToggle = document.getElementById('menu-toggle');
+  const mobileNav = document.getElementById('mobile-nav');
 
-	window.addEventListener('scroll', handleScroll);
+  // 滚动监听
+  const observer = new IntersectionObserver(([entry]) => {
+    header?.classList.toggle('is-scrolled', !entry.isIntersecting);
+  }, { threshold: [0] });
 
-	const linksContainer = document.querySelector('.internal-links');
-	const links = linksContainer?.querySelectorAll('a');
-	const indicator = document.getElementById('nav-indicator');
+  if (sentinel) observer.observe(sentinel);
 
-	if (linksContainer && links && indicator) {
-		const updateIndicator = (el: HTMLElement) => {
-			const paddingX = 6;
-			const paddingY = 4;
-			
-			// Get dimensions
-			const containerHeight = linksContainer.clientHeight;
-			const elementHeight = el.offsetHeight;
-			const targetHeight = elementHeight - paddingY;
-			
-			// Calculate vertical center position
-			const verticalCenter = (containerHeight - targetHeight) / 2;
-			
-			indicator.style.width = `${el.offsetWidth - paddingX}px`;
-			indicator.style.height = `${targetHeight}px`;
-			indicator.style.transform = `translate(${el.offsetLeft + (paddingX / 2)}px, ${verticalCenter}px)`;
-			indicator.style.opacity = '1';
-		};
+  // 移动端菜单切换
+  menuToggle?.addEventListener('click', () => {
+    const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+    menuToggle.setAttribute('aria-expanded', (!isExpanded).toString());
+    mobileNav?.classList.toggle('is-active');
+  });
 
-		const resetIndicator = () => {
-			const activeLink = linksContainer.querySelector('.active') as HTMLElement;
-			if (activeLink) {
-				updateIndicator(activeLink);
-			} else {
-				indicator.style.opacity = '0';
-			}
-		};
-
-		// Initialize
-		// Use requestAnimationFrame to ensure layout is ready
-		requestAnimationFrame(() => {
-			resetIndicator();
-			// Re-calculate on window resize
-			window.addEventListener('resize', resetIndicator);
-		});
-
-		// Add event listeners
-		links.forEach(link => {
-			link.addEventListener('mouseenter', (e) => {
-				updateIndicator(e.currentTarget as HTMLElement);
-			});
-		});
-
-		linksContainer.addEventListener('mouseleave', resetIndicator);
-	}
+  // 点击链接后自动关闭菜单
+  mobileNav?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuToggle?.setAttribute('aria-expanded', 'false');
+      mobileNav?.classList.remove('is-active');
+    });
+  });
 </script>
+
+<style>
+  .header-sentinel {
+    position: absolute;
+    top: 0;
+    height: 1px;
+    width: 1px;
+    pointer-events: none;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+    /* 移除外层 padding 的过渡，保持位置稳固 */
+    padding: 0.75rem max(1rem, env(safe-area-inset-right)) 0.75rem max(1rem, env(safe-area-inset-left));
+    transition: padding 0.2s ease;
+  }
+
+  .header-inner {
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column; /* 纵向排列以支持下拉 */
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: 
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      backdrop-filter 0.2s ease,
+      padding 0.2s ease;
+  }
+
+  .header-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  /* 初始状态：模拟嵌入页面的普通页头 */
+  :not(.is-scrolled) .header-inner {
+    border-bottom-color: var(--glass-border);
+    border-radius: 0;
+    padding: 1.1rem 0.5rem;
+  }
+
+  /* 滚动态：极简胶囊 */
+  .is-scrolled .header-inner {
+    background-color: var(--background-header);
+    border-color: var(--glass-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+  }
+
+  .brand {
+    color: rgb(var(--black));
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .nav-links :global(a) {
+    color: rgb(var(--gray-dark));
+    font-size: 0.95rem;
+    padding: 0.25rem 0.45rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .nav-links :global(a:hover) {
+    background: rgba(var(--gray-light), 0.5);
+    text-decoration: none;
+  }
+
+  .nav-links :global(a.active) {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* 移动端菜单开关 */
+  .menu-toggle {
+    background: transparent;
+    border: none;
+    color: rgb(var(--gray-dark));
+    cursor: pointer;
+    padding: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    position: relative;
+    width: 32px;
+    height: 32px;
+  }
+
+  .menu-toggle:hover {
+    background: rgba(var(--gray-light), 0.5);
+  }
+
+  .menu-toggle .icon-close { display: none; }
+  .menu-toggle[aria-expanded="true"] .icon-menu { display: none; }
+  .menu-toggle[aria-expanded="true"] .icon-close { display: block; }
+
+  /* 移动端导航容器 - 单一胶囊展开 */
+  .mobile-nav {
+    width: 100%;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.2s ease;
+    display: flex;
+    flex-direction: row; /* 改为横向排列 */
+    flex-wrap: wrap; /* 允许在极窄屏下换行 */
+    justify-content: space-between; /* 分散对齐 */
+    align-items: center;
+  }
+
+  .mobile-nav.is-active {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .mobile-nav :global(a) {
+    flex: 1 0 auto; /* 让每个链接自动平分空间或保持自然宽度 */
+    padding: 0.5rem 0.4rem;
+    border-radius: 8px;
+    text-align: center;
+    color: rgb(var(--gray-dark));
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .mobile-nav :global(a:hover) {
+    background: rgba(var(--gray-light), 0.5);
+  }
+
+  .mobile-nav :global(a.active) {
+    background: rgba(var(--accent), 0.08);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* 工具类 */
+  .desktop-only { display: flex; }
+  .mobile-only { display: none; }
+
+  @media (max-width: 860px) {
+    .desktop-only { display: none; }
+    .mobile-only { display: flex; }
+
+    .site-header {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .header-inner {
+      padding: 0.5rem 0.85rem;
+    }
+
+    :not(.is-scrolled) .header-inner {
+      padding: 0.7rem 0.6rem;
+    }
+  }
+</style>

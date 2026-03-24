@@ -1,89 +1,88 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../../components/BaseHead.astro';
-import Footer from '../../../components/Footer.astro';
-import Header from '../../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../../consts';
-import { withBase } from '../../../utils/withBase';
+import { getCollection } from "astro:content";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../../../consts";
+import SiteLayout from "../../../layouts/SiteLayout.astro";
+import { withBase } from "../../../utils/withBase";
 
-const posts = await getCollection('blog');
+const posts = await getCollection("blog");
 const collectionMap = new Map<string, { description: string; count: number }>();
 for (const post of posts) {
-	if (!post.data.collection) {
-		continue;
-	}
-	const existing = collectionMap.get(post.data.collection);
-	const description = post.data.collectionDescription ?? '';
-	if (existing) {
-		existing.count += 1;
-		if (!existing.description && description) {
-			existing.description = description;
-		}
-	} else {
-		collectionMap.set(post.data.collection, { description, count: 1 });
-	}
+  if (!post.data.collection) {
+    continue;
+  }
+  const existing = collectionMap.get(post.data.collection);
+  const description = post.data.collectionDescription ?? "";
+  if (existing) {
+    existing.count += 1;
+    if (!existing.description && description) {
+      existing.description = description;
+    }
+  } else {
+    collectionMap.set(post.data.collection, { description, count: 1 });
+  }
 }
 const items = Array.from(collectionMap.entries())
-	.map(([title, meta]) => ({ title, ...meta }))
-	.sort((a, b) => b.count - a.count);
+  .map(([title, meta]) => ({ title, ...meta }))
+  .sort((a, b) => b.count - a.count);
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`Collections | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-		<style>
-			h1 {
-				margin: 0 0 0.35rem;
-				font-size: 1.25rem;
-				line-height: 1.2;
-			}
-			.summary {
-				margin: 0 0 1rem;
-				color: rgb(var(--gray));
-			}
-			.list {
-				list-style: none;
-				margin: 0;
-				padding: 0;
-				display: grid;
-				gap: 0.5rem;
-			}
-			.list a {
-				display: block;
-				padding: 0.15rem 0;
-				text-decoration: none;
-			}
-			.title {
-				margin: 0;
-				font-weight: 700;
-				font-size: 1.05em;
-				color: rgb(var(--black));
-			}
-			.desc {
-				margin: 0.25rem 0 0;
-				color: rgb(var(--gray));
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>Collections</h1>
-			<p class="summary">共 {items.length} 个合集</p>
-			<ul class="list">
-				{
-					items.map((item) => (
-						<li>
-							<a href={withBase(`/blog/collections/${item.title}/`)}>
-								<p class="title">{item.title}</p>
-								<p class="desc">{item.description || `共 ${item.count} 篇文章`}</p>
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout
+  title={`Collections | ${SITE_TITLE}`}
+  description={SITE_DESCRIPTION}
+>
+  <h1>Collections</h1>
+  <p class="summary">共 {items.length} 个合集</p>
+  <ul class="list">
+    {
+      items.map((item) => (
+        <li>
+          <a
+            href={withBase(
+              `/blog/collections/${encodeURIComponent(item.title)}/`,
+            )}
+          >
+            <p class="title">{item.title}</p>
+            <p class="desc">{item.description || `共 ${item.count} 篇文章`}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</SiteLayout>
+
+<style>
+  h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  .summary {
+    margin: 0 0 1rem;
+    color: rgb(var(--gray));
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--gap-0);
+  }
+  .list li + li {
+    border-top: var(--section-divider-width) solid var(--section-divider-color);
+  }
+  .list a {
+    display: block;
+    padding: 0.55rem 0;
+    text-decoration: none;
+  }
+  .title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.05em;
+    color: rgb(var(--black));
+  }
+  .desc {
+    margin: 0.25rem 0 0;
+    color: rgb(var(--gray));
+  }
+</style>

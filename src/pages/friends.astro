@@ -1,103 +1,240 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import CommentSection from '../components/CommentSection.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { FRIEND_LINKS, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import CommentSection from "../components/CommentSection.astro";
+import {
+  FRIEND_LINKS,
+  HOME_PROFILE,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+} from "../consts";
+import SiteLayout from "../layouts/SiteLayout.astro";
 
 const pageTitle = `Friends | ${SITE_TITLE}`;
+const ownFriendLinkText = `Name: ${SITE_TITLE}
+Desc: ${HOME_PROFILE.tagline}
+Link: ${SITE_URL}
+Avatar: ${HOME_PROFILE.avatarSrc}`;
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={pageTitle} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section class="friends-page">
-				<h1>友链</h1>
-				<p class="summary">欢迎交换友链，也欢迎在评论区留言你的站点信息。</p>
-				<ul class="friends-list">
-					{
-						FRIEND_LINKS.map((link) => (
-							<li>
-								<a href={link.url} target="_blank" rel="noopener noreferrer">
-									{
-										link.avatar && (
-											<img class="avatar" src={link.avatar} alt={`${link.name} avatar`} loading="lazy" />
-										)
-									}
-									<span class="content">
-										<span class="name">{link.name}</span>
-										<span class="desc">{link.description}</span>
-									</span>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-				<CommentSection />
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout title={pageTitle} description={SITE_DESCRIPTION}>
+  <section class="friends-page">
+    <div class="title-row">
+      <h1>友链</h1>
+      <button
+        class="copy-link-btn"
+        type="button"
+        data-copy-text={ownFriendLinkText}>复制本站友链信息</button
+      >
+    </div>
+    <p class="summary">欢迎交换友链，也欢迎在评论区留言你的站点信息。</p>
+
+    <ul class="friends-list">
+      {
+        FRIEND_LINKS.map((link) => (
+          <li>
+            <a
+              href={link.link ?? link.url}
+              target={(link.link ?? link.url) === "#" ? undefined : "_blank"}
+              rel={
+                (link.link ?? link.url) === "#"
+                  ? undefined
+                  : "noopener noreferrer"
+              }
+              aria-disabled={
+                (link.link ?? link.url) === "#" ? "true" : undefined
+              }
+            >
+              {link.avatar && (
+                <img
+                  class="avatar"
+                  src={link.avatar}
+                  alt={`${link.name} avatar`}
+                  loading="lazy"
+                />
+              )}
+              <span class="content">
+                <span class="name-row">
+                  <span class="name">{link.name}</span>
+                </span>
+                <span class="desc">{link.desc ?? link.description}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <section class="template-section">
+      <h2 class="section-header">申请友链模板</h2>
+      <div class="template-card">
+        <pre class="copyable-template"><code>Name: {SITE_TITLE}
+Desc: {HOME_PROFILE.tagline}
+Link: {SITE_URL}
+Avatar: {HOME_PROFILE.avatarSrc}</code></pre>
+      </div>
+    </section>
+
+    <CommentSection />
+  </section>
+</SiteLayout>
+
+<script is:inline>
+  const copyBtn = document.querySelector(".copy-link-btn");
+  if (copyBtn) {
+    const originalText = copyBtn.textContent;
+    copyBtn.addEventListener("click", async () => {
+      const text = copyBtn.getAttribute("data-copy-text") ?? "";
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "已复制";
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1600);
+      } catch {
+        copyBtn.textContent = "复制失败";
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1600);
+      }
+    });
+  }
+</script>
 
 <style>
-	.friends-page h1 {
-		margin: 0 0 0.35rem;
-		font-size: 1.25rem;
-		line-height: 1.2;
-	}
-	.summary {
-		margin: 0 0 0.9rem;
-		font-size: 1em;
-		color: rgb(var(--gray));
-	}
-	.friends-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: grid;
-		gap: 0.65rem;
-	}
-	.friends-list a {
-		display: grid;
-		grid-template-columns: 36px 1fr;
-		align-items: center;
-		gap: 0.55rem;
-		padding: 0.25rem 0;
-		text-decoration: none;
-	}
-	.avatar {
-		width: 36px;
-		min-width: 36px;
-		max-width: 36px;
-		height: 36px;
-		min-height: 36px;
-		max-height: 36px;
-		display: block;
-		overflow: hidden;
-		flex: 0 0 36px;
-		border-radius: 4px;
-		border: 1px solid rgba(var(--gray), 0.2);
-		object-fit: cover;
-	}
-	.content {
-		display: grid;
-		gap: 0.2rem;
-	}
-	.name {
-		font-size: 1em;
-		font-weight: 700;
-		line-height: 1.3;
-		color: rgb(var(--black));
-	}
-	.desc {
-		font-size: 0.92em;
-		line-height: 1.45;
-		color: rgb(var(--gray));
-	}
+  .friends-page h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--gap-2xl);
+    margin: 0 0 0.35rem;
+  }
+  .summary {
+    margin: 0 0 1.2rem;
+    font-size: 1em;
+    color: rgb(var(--gray));
+  }
+  .template-section {
+    margin: 3.5rem 0 1.5rem;
+  }
+  .section-header {
+    margin: 0 0 1.2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: rgb(var(--black));
+  }
+  .template-card {
+    padding: 1.2rem;
+    background: var(--background-header);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+  }
+  .copyable-template {
+    margin: 0;
+    padding: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: rgb(var(--gray-dark));
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .copyable-template code {
+    all: unset;
+  }
+  .section-divider {
+    margin: 3rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--section-divider-color),
+      transparent
+    );
+    opacity: 0.7;
+  }
+  .copy-link-btn {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-link-btn:hover {
+    text-decoration: underline;
+  }
+  .friends-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .friends-list li {
+    border-bottom: var(--section-divider-width) solid var(--section-divider-color);
+  }
+  .friends-list a {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    align-items: center;
+    gap: var(--gap-md-plus);
+    padding: 0.65rem 0;
+    text-decoration: none;
+  }
+  .friends-page :global(.comments) {
+    margin-top: 0;
+    padding-top: 0.65rem;
+  }
+  .avatar {
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    display: block;
+    overflow: hidden;
+    flex: 0 0 36px;
+    border-radius: 4px;
+    border: 1px solid rgba(var(--gray), 0.2);
+    object-fit: cover;
+  }
+  .content {
+    display: grid;
+    gap: var(--gap-2xs);
+  }
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .name {
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.3;
+    color: rgb(var(--black));
+  }
+  .desc {
+    font-size: 0.92em;
+    line-height: 1.45;
+    color: rgb(var(--gray));
+  }
+  @media (max-width: 430px) {
+    .title-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 </style>

@@ -20,6 +20,8 @@ const { title, description, image } = Astro.props;
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f8fa" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d1117" />
 <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
 <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
 <link

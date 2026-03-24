@@ -1,89 +1,90 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { withBase } from '../../utils/withBase';
+import { getCollection } from "astro:content";
+import FormattedDate from "../../components/FormattedDate.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { withBase } from "../../utils/withBase";
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
 const yearMap = new Map<number, typeof posts>();
 for (const post of posts) {
-	const year = post.data.pubDate.getFullYear();
-	const existing = yearMap.get(year) ?? [];
-	existing.push(post);
-	yearMap.set(year, existing);
+  const year = post.data.pubDate.getFullYear();
+  const existing = yearMap.get(year) ?? [];
+  existing.push(post);
+  yearMap.set(year, existing);
 }
 const yearGroups = Array.from(yearMap.entries()).sort((a, b) => b[0] - a[0]);
 ---
 
-<!doctype html>
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`Posts by Years | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-		<style>
-			.years-head h1 {
-				margin: 0 0 0.35rem;
-				font-size: 1.25rem;
-				line-height: 1.2;
-			}
-			.years-head p {
-				margin: 0 0 1rem;
-				color: rgb(var(--gray));
-			}
-			.year-group + .year-group {
-				margin-top: 1rem;
-			}
-			.year-group h2 {
-				margin: 0 0 0.45rem;
-				font-size: 1.1rem;
-			}
-			.year-list {
-				list-style: none;
-				padding: 0;
-				margin: 0;
-				display: grid;
-				gap: 0.4rem;
-			}
-			.year-list a {
-				text-decoration: none;
-				font-weight: 600;
-			}
-			.year-list time {
-				margin-left: 0.55rem;
-				color: rgb(var(--gray));
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section class="years-head">
-				<h1>Posts by Years</h1>
-				<p>共 {posts.length} 篇文章</p>
-			</section>
-			{
-				yearGroups.map(([year, items]) => (
-					<section class="year-group">
-						<h2>{year}</h2>
-						<ul class="year-list">
-							{items.map((post) => (
-								<li>
-									<a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
-									<time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
-										<FormattedDate date={post.data.pubDate} />
-									</time>
-								</li>
-							))}
-						</ul>
-					</section>
-				))
-			}
-		</main>
-		<Footer />
-	</body>
-</html>
+<SiteLayout
+  title={`Posts by Years | ${SITE_TITLE}`}
+  description={SITE_DESCRIPTION}
+>
+  <section class="years-head">
+    <h1>Posts by Years</h1>
+    <p>共 {posts.length} 篇文章</p>
+  </section>
+  {
+    yearGroups.map(([year, items]) => (
+      <section class="year-group">
+        <h2>{year}</h2>
+        <ul class="year-list">
+          {items.map((post) => (
+            <li>
+              <a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
+              <time datetime={post.data.pubDate.toISOString().slice(0, 10)}>
+                <FormattedDate date={post.data.pubDate} />
+              </time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</SiteLayout>
+
+<style>
+  .years-head h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  .years-head p {
+    margin: 0 0 1rem;
+    color: rgb(var(--gray));
+  }
+  .year-group + .year-group {
+    margin-top: var(--section-gap-y);
+  }
+  .year-group h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1.1rem;
+  }
+  .year-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--gap-sm);
+  }
+  .year-list a {
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .year-list time {
+    margin-left: 0.55rem;
+    color: rgb(var(--gray));
+  }
+  @media (max-width: 720px) {
+    .year-list li {
+      display: grid;
+      gap: var(--gap-2xs);
+    }
+    .year-list time {
+      margin-left: 0;
+    }
+  }
+</style>

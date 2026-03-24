@@ -36,16 +36,18 @@ tags:
 
 ```ts
 export const COMMENTS = {
-	enabled: true,
-	provider: 'giscus',
-	repo: 'kevynf/logflow-theme',
-	repoId: '你的 repoId',
-	category: 'Announcements',
-	categoryId: '你的 categoryId',
-	mapping: 'pathname',
-	themeLight: 'light',
-	themeDark: 'dark',
-	lang: 'zh-CN',
+  enabled: true,
+  repo: "your-username/your-repo-name",
+  repoId: "your-repo-id",
+  category: "Announcements",
+  categoryId: "your-category-id",
+  mapping: "pathname",
+  strict: "0",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "top",
+  lang: "zh-CN",
+  loading: "lazy",
 };
 ```
 

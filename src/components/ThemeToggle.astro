@@ -1,86 +1,132 @@
 ---
+
 ---
+
 <theme-toggle>
-	<button>
-		<span class="sr-only">Toggle theme</span>
-		<span class="icon sun">
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<circle cx="12" cy="12" r="5"></circle>
-				<line x1="12" y1="1" x2="12" y2="3"></line>
-				<line x1="12" y1="21" x2="12" y2="23"></line>
-				<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-				<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-				<line x1="1" y1="12" x2="3" y2="12"></line>
-				<line x1="21" y1="12" x2="23" y2="12"></line>
-				<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-				<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-			</svg>
-		</span>
-		<span class="icon moon">
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-			</svg>
-		</span>
-	</button>
+  <button>
+    <span class="sr-only">Toggle theme</span>
+    <span class="icon sun">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2"></path>
+        <path d="M12 20v2"></path>
+        <path d="m4.93 4.93 1.41 1.41"></path>
+        <path d="m17.66 17.66 1.41 1.41"></path>
+        <path d="M2 12h2"></path>
+        <path d="M20 12h2"></path>
+        <path d="m6.34 17.66-1.41 1.41"></path>
+        <path d="m19.07 4.93-1.41 1.41"></path>
+      </svg>
+    </span>
+    <span class="icon moon">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"></path>
+      </svg>
+    </span>
+  </button>
 </theme-toggle>
 
 <style>
-	button {
-		display: flex;
-		border: 0;
-		border-radius: 50%;
-		padding: 0;
-		cursor: pointer;
-		background-color: transparent;
-		color: #333;
-	}
+  theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-	.icon {
-		align-items: center;
-		justify-content: center;
-		width: 2rem;
-		height: 2rem;
-	}
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0; /* Reset margin */
+    cursor: pointer;
+    background-color: transparent;
+    color: #333;
+    line-height: 1; /* Match others */
+    width: 1.5rem; /* Explicit width */
+    height: 1.5rem; /* Explicit height */
+  }
 
-	.icon.sun {
-		display: none;
-	}
+  .icon {
+    display: flex; /* Ensure flex for centering SVG */
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 
-	.icon.moon {
-		display: flex;
-	}
+  .icon svg {
+    display: block; /* Remove baseline space */
+  }
 
-	:global(.dark) .icon.sun {
-		display: flex;
-	}
+  .icon.sun {
+    display: none;
+  }
 
-	:global(.dark) .icon.moon {
-		display: none;
-	}
+  .icon.moon {
+    display: flex;
+  }
 
-	:global(.dark) button {
-		color: #ccc;
-	}
+  :global(.dark) .icon.sun {
+    display: flex;
+  }
+
+  :global(.dark) .icon.moon {
+    display: none;
+  }
+
+  :global(.dark) button {
+    color: #ccc;
+  }
 </style>
 
 <script>
-	class ThemeToggle extends HTMLElement {
-		constructor() {
-			super();
+  class ThemeToggle extends HTMLElement {
+    constructor() {
+      super();
 
-			const button = this.querySelector('button');
+      const button = this.querySelector("button");
 
-			/** Set the theme to dark/light mode. */
-			const setTheme = (dark: boolean) => {
-				document.documentElement.classList[dark ? 'add' : 'remove']('dark');
-				button?.setAttribute('aria-pressed', String(dark));
-			};
+      /** Set the theme to dark/light mode. */
+      const setTheme = (dark: boolean) => {
+        document.documentElement.classList[dark ? "add" : "remove"]("dark");
+        button?.setAttribute("aria-pressed", String(dark));
+        document.dispatchEvent(
+          new CustomEvent("theme-changed", {
+            detail: { theme: dark ? "dark" : "light" },
+          }),
+        );
+      };
 
-			// Toggle the theme when a user clicks the button.
-			button?.addEventListener('click', () => {
-				setTheme(!document.documentElement.classList.contains('dark'));
-			});
-		}
-	}
-	customElements.define('theme-toggle', ThemeToggle);
+      // Toggle the theme when a user clicks the button.
+      button?.addEventListener("click", () => {
+        setTheme(!document.documentElement.classList.contains("dark"));
+      });
+    }
+  }
+  customElements.define("theme-toggle", ThemeToggle);
 </script>
