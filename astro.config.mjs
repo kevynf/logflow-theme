@@ -8,7 +8,7 @@ import { SITE_URL } from './src/consts';
 
 // https://astro.build/config
 export default defineConfig({
-	site: SITE_URL,
-	base: '/',
+	site: 'https://kevynf.github.io',
+	base: '/logflow-theme',
 	integrations: [mdx(), sitemap(), react()],
 });
