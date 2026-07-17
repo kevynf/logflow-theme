@@ -1,0 +1,9 @@
+---
+interface Props { title: string; description?: string; meta?: string; descriptionItalic?: boolean }
+const { title, description, meta, descriptionItalic = false } = Astro.props;
+const hasDescriptionAction = Astro.slots.has("description-action");
+---
+<header class="page-header">
+  <div class="page-header-title-line"><h1>{title}</h1>{meta && <span>{meta}</span>}</div>
+  {(description || hasDescriptionAction) && <div class="page-header-description-line">{description && <p class:list={{ "is-italic": descriptionItalic }}>{description}</p>}{hasDescriptionAction && <slot name="description-action" />}</div>}
+</header>

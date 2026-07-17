@@ -1,0 +1,12 @@
+---
+import { getCollection } from "astro:content";
+import PageHeader from "../../../components/PageHeader.astro";
+import PostList from "../../../components/PostList.astro";
+import { SITE_TITLE } from "../../../consts";
+import SiteLayout from "../../../layouts/SiteLayout.astro";
+import { taxonomySlug } from "../../../utils/content";
+export async function getStaticPaths() { const posts = await getCollection("blog"); const tags = new Set(posts.flatMap((post) => post.data.tags ?? [])); return Array.from(tags).map((tag) => ({ params: { slug: taxonomySlug(tag) }, props: { tagName: tag } })); }
+const { tagName } = Astro.props; const posts = (await getCollection("blog")).filter((post) => (post.data.tags ?? []).includes(tagName)).sort((a,b) => b.data.pubDate.valueOf()-a.data.pubDate.valueOf());
+const description = `与「${tagName}」相关的文章。`;
+---
+<SiteLayout title={`${tagName} | 标签 | ${SITE_TITLE}`} description={description}><PageHeader title={tagName} description={description} meta={`${posts.length} 篇`} /><PostList posts={posts} showDescription={false} /></SiteLayout>

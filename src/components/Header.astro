@@ -1,0 +1,47 @@
+---
+import { NAV_LINKS, SITE_TITLE } from "../consts";
+import { isRouteActive, withBase } from "../utils/withBase";
+import HeaderLink from "./HeaderLink.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+
+const currentSection = NAV_LINKS.find((link) => isRouteActive(Astro.url.pathname, link.href))?.label ?? "首页";
+---
+<header class="site-header"><div class="header-inner">
+  <div class="brand-lockup"><a class="brand" href={withBase("/")}>{SITE_TITLE}</a><span aria-hidden="true">/</span><span class="current-section">{currentSection}</span></div>
+  <nav class="desktop-nav" aria-label="主导航">{NAV_LINKS.map((link,index) => <HeaderLink href={link.href}><span class="nav-index">{String(index+1).padStart(2,"0")}</span><span class="nav-label">{link.label}</span></HeaderLink>)}</nav>
+  <div class="actions"><ThemeToggle /><button id="menu-toggle" class="menu-toggle" type="button" aria-label="展开导航" aria-controls="mobile-nav" aria-expanded="false"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>
+  <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" aria-hidden="true">{NAV_LINKS.map((link,index) => <HeaderLink href={link.href} tabindex="-1"><span class="nav-index">{String(index+1).padStart(2,"0")}</span><span class="nav-label">{link.label}</span></HeaderLink>)}</nav>
+</div></header>
+<script>
+  const menuToggle = document.getElementById("menu-toggle"); const mobileNav = document.getElementById("mobile-nav");
+  const menuStorageKey = "mobile-nav-open"; const mobileViewport = window.matchMedia("(max-width: 760px)");
+  const readMenuOpen = () => { try { return sessionStorage.getItem(menuStorageKey) === "true"; } catch { return false; } };
+  const writeMenuOpen = (open: boolean) => { try { sessionStorage.setItem(menuStorageKey, String(open)); } catch {} };
+  const setMenuOpen = (open: boolean, persist = true) => { menuToggle?.setAttribute("aria-expanded", String(open)); menuToggle?.setAttribute("aria-label", open ? "收起导航" : "展开导航"); mobileNav?.classList.toggle("is-open", open); mobileNav?.setAttribute("aria-hidden", String(!open)); mobileNav?.querySelectorAll("a").forEach((link) => { link.tabIndex = open ? 0 : -1; }); if (persist) writeMenuOpen(open); };
+  const syncMenuToViewport = () => setMenuOpen(mobileViewport.matches && readMenuOpen(), false);
+  menuToggle?.addEventListener("click", () => setMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true"));
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") setMenuOpen(false); });
+  mobileViewport.addEventListener("change", syncMenuToViewport); syncMenuToViewport();
+</script>
+<style>
+  .site-header { --header-icon-size:1.125rem; --header-icon-stroke:2; position:sticky; top:0; z-index:100; background:var(--background-header); -webkit-backdrop-filter:saturate(150%) blur(12px); backdrop-filter:saturate(150%) blur(12px); }
+  .header-inner { display:grid; grid-template-columns:auto minmax(0,1fr) auto; width:var(--page-max-width); max-width:calc(100% - 2rem); min-height:3.5rem; margin:0 auto; align-items:center; gap:.75rem; }
+  .brand-lockup { display:flex; min-width:0; align-items:baseline; gap:.4rem; white-space:nowrap; }
+  .brand { padding:.4rem 0; color:var(--text-primary); font-size:var(--text-lg); font-weight:var(--weight-bold); line-height:var(--line-height-compact); text-decoration:none; white-space:nowrap; transition:color .16s ease; }
+  .brand:hover { color:var(--accent); }
+  .brand-lockup > span { color:var(--text-muted); font-size:var(--text-xs); line-height:var(--line-height-compact); }
+  .current-section { overflow:hidden; width:3em; text-overflow:ellipsis; }
+  .desktop-nav { display:flex; justify-content:flex-end; gap:.25rem; }
+  .desktop-nav :global(a),.mobile-nav :global(a) { position:relative; flex:0 0 auto; padding:.45rem .55rem; border-radius:var(--radius-ui); color:var(--text-secondary); font-size:var(--text-md); line-height:var(--line-height-compact); white-space:nowrap; transition:background-color .16s ease,color .16s ease; }
+  .desktop-nav :global(a:hover),.mobile-nav :global(a:hover) { background:var(--background-elevated); }
+  .desktop-nav :global(a.active),.mobile-nav :global(a.active) { color:var(--accent); }
+  :global(.nav-index) { margin-right:.35rem; color:var(--text-muted); font-size:var(--text-xs); font-weight:var(--weight-regular); font-variant-numeric:tabular-nums; }
+  :global(.nav-label::after) { display:inline-block; width:.28rem; height:.28rem; margin-left:.32rem; border-radius:50%; background:currentColor; content:""; opacity:0; transform:scale(.45); transform-origin:center; transition:opacity .16s ease,transform .16s ease; vertical-align:.18em; }
+  :global(a.active .nav-label::after) { opacity:1; transform:scale(1); }
+  .actions { display:flex; align-items:center; gap:.2rem; }
+  .menu-toggle { display:none; width:2.25rem; height:2.25rem; padding:0; place-items:center; border:0; border-radius:var(--radius-ui); background:transparent; color:var(--text-secondary); cursor:pointer; transition:background-color .16s ease,color .16s ease; }
+  .menu-toggle:hover,.menu-toggle[aria-expanded="true"] { background:var(--background-elevated); color:var(--accent); }
+  .menu-toggle svg { width:var(--header-icon-size); height:var(--header-icon-size); fill:none; stroke:currentColor; stroke-width:var(--header-icon-stroke); stroke-linecap:round; stroke-linejoin:round; }
+  .close-icon,.mobile-nav { display:none; } .menu-toggle[aria-expanded="true"] .menu-icon { display:none; } .menu-toggle[aria-expanded="true"] .close-icon { display:block; }
+  @media (max-width:760px) { .header-inner { grid-template-columns:minmax(0,1fr) auto; grid-template-rows:3.5rem; max-width:calc(100% - 1.5rem); min-height:0; gap:0 .5rem; } .desktop-nav { display:none; } .menu-toggle { display:grid; } .mobile-nav { display:grid; grid-column:1/-1; grid-row:2; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.25rem; max-height:0; padding:0; overflow:hidden; opacity:0; pointer-events:none; transform:translateY(-4px); visibility:hidden; transition:max-height .16s ease,opacity .16s ease,transform .16s ease,visibility 0s linear .16s; } .mobile-nav.is-open { max-height:8rem; padding:.2rem 0 .7rem; opacity:1; pointer-events:auto; transform:translateY(0); visibility:visible; transition-delay:0s; } .mobile-nav :global(a) { text-align:left; } }
+</style>

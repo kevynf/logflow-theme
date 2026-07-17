@@ -1,0 +1,17 @@
+---
+import { getCollection } from "astro:content";
+import ContentSection from "../components/layout/ContentSection.astro";
+import ArchiveLink from "../components/ArchiveLink.astro";
+import GitHubContribute from "../components/GitHubContribute.astro";
+import PostList from "../components/PostList.astro";
+import { HOME, SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { withBase } from "../utils/withBase";
+
+const posts = (await getCollection("blog")).sort((a,b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, HOME.recentPostsLimit);
+---
+<SiteLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <ContentSection class="site-intro"><img src={withBase(HOME.avatar.src)} alt={HOME.avatar.alt} width="72" height="72" loading="eager" fetchpriority="high"/><div><h1>{SITE_TITLE}</h1><span class="site-intro-summary">{HOME.description}</span><div class="site-intro-motto"><p>{HOME.motto}</p><a href={withBase("/about/")}>关于本站 →</a></div></div></ContentSection>
+  <ContentSection class="stream-section"><header><h2>最近文章</h2><ArchiveLink /></header><PostList posts={posts} showReadingTime={true}/></ContentSection>
+  <ContentSection><GitHubContribute /></ContentSection>
+</SiteLayout>

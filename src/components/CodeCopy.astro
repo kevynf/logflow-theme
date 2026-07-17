@@ -1,0 +1,37 @@
+<script>
+  const copyText = async (text: string) => {
+    if (!navigator.clipboard) throw new Error("Clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+  };
+
+  document.querySelectorAll<HTMLElement>(".content-prose pre, .exchange-section pre").forEach((pre) => {
+    if (pre.closest(".code-block")) return;
+    const code = pre.querySelector("code");
+    if (!code) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "code-block";
+    pre.before(wrapper);
+    wrapper.append(pre);
+
+    const button = document.createElement("button");
+    button.className = "code-copy-button";
+    button.type = "button";
+    button.textContent = "复制";
+    button.setAttribute("aria-label", "复制代码");
+    button.setAttribute("aria-live", "polite");
+    wrapper.append(button);
+
+    button.addEventListener("click", async () => {
+      try {
+        await copyText(code.textContent ?? "");
+        button.textContent = "已复制";
+        button.dataset.state = "success";
+      } catch {
+        button.textContent = "复制失败";
+        button.dataset.state = "error";
+      }
+      window.setTimeout(() => { button.textContent = "复制"; button.dataset.state = ""; }, 1600);
+    });
+  });
+</script>

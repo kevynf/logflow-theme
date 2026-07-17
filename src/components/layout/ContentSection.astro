@@ -1,0 +1,12 @@
+---
+interface Props {
+  divided?: boolean;
+  class?: string;
+}
+
+const { divided = false, class: className } = Astro.props;
+---
+
+<section class:list={["content-section", { divided }, className]}>
+  <slot />
+</section>

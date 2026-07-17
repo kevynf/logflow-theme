@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import ArchiveLink from "../../components/ArchiveLink.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import PostList from "../../components/PostList.astro";
+import SidebarSection from "../../components/layout/SidebarSection.astro";
+import { PAGE_COPY, SITE_TITLE } from "../../consts";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { collectionPath, tagPath } from "../../utils/content";
+import { withBase } from "../../utils/withBase";
+
+const posts = (await getCollection("blog")).sort((a,b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const collectionMap = new Map<string,{description:string;count:number}>(); const tagMap = new Map<string,number>();
+for (const post of posts) { if(post.data.collection){const current=collectionMap.get(post.data.collection);const description=post.data.collectionDescription??"";if(current){current.count++;current.description ||= description;}else collectionMap.set(post.data.collection,{description,count:1});} for(const tag of post.data.tags??[]) tagMap.set(tag,(tagMap.get(tag)??0)+1); }
+const collections=Array.from(collectionMap.entries()).sort((a,b)=>b[1].count-a[1].count); const tags=Array.from(tagMap.entries()).sort((a,b)=>b[1]-a[1]);
+---
+<SiteLayout title={`${PAGE_COPY.blog.title} | ${SITE_TITLE}`} description={PAGE_COPY.blog.description}>
+  <PageHeader title={PAGE_COPY.blog.title} description={PAGE_COPY.blog.description} descriptionItalic={PAGE_COPY.blog.descriptionItalic} meta={`${posts.length} 篇`}><ArchiveLink slot="description-action" /></PageHeader>
+  <div class="blog-layout"><section><PostList posts={posts} showReadingTime={true}/></section><aside class="blog-sidebar">
+    <SidebarSection title="专题" href={withBase("/blog/collections/")}><ul class="sidebar-section-list">{collections.map(([name,meta])=><li><a href={withBase(collectionPath(name))}>{name}<small>{meta.count} 篇</small></a></li>)}</ul></SidebarSection>
+    <SidebarSection title="标签" href={withBase("/blog/tags/")}><div class="sidebar-tags">{tags.map(([tag,count])=><a href={withBase(tagPath(tag))}>{tag} <small>{count}</small></a>)}</div></SidebarSection>
+  </aside></div>
+</SiteLayout>
