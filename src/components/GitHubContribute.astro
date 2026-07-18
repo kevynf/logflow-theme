@@ -1,6 +1,16 @@
 ---
 import { GH_CONTRIBUTE } from "../consts";
-import GitHubCalendarWidget from "./GitHubCalendarWidget";
+import { fetchGitHubContributions } from "../utils/githubContributions";
+import GitHubCalendar from "./GitHubCalendar.astro";
+
+let contributionData = null;
+
+try {
+  contributionData = await fetchGitHubContributions(GH_CONTRIBUTE.username);
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.warn(`[GitHub contributions] ${message}`);
+}
 ---
 
 <section class="gh-contribute">
@@ -8,11 +18,13 @@ import GitHubCalendarWidget from "./GitHubCalendarWidget";
     <h2><a href={GH_CONTRIBUTE.profileUrl} target="_blank" rel="noopener noreferrer">{GH_CONTRIBUTE.title}</a></h2>
     <p>{GH_CONTRIBUTE.description}</p>
   </div>
-  <GitHubCalendarWidget
-    client:visible
-    username={GH_CONTRIBUTE.username}
-    errorMessage={GH_CONTRIBUTE.errorMessage}
-  />
+  {
+    contributionData ? (
+      <GitHubCalendar {...contributionData} />
+    ) : (
+      <p class="calendar-error">{GH_CONTRIBUTE.errorMessage}</p>
+    )
+  }
 </section>
 
 <style>
@@ -20,17 +32,6 @@ import GitHubCalendarWidget from "./GitHubCalendarWidget";
     margin-top: 0;
     width: 100%;
     min-width: 0;
-  }
-  :global(.gh-contribute .gh-calendar-viewport) {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    padding-bottom: 0.25rem;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
   }
   .section-head h2 {
     margin-bottom: 0.35rem;
@@ -48,27 +49,9 @@ import GitHubCalendarWidget from "./GitHubCalendarWidget";
     color: rgb(var(--gray));
     font-size: var(--text-sm);
   }
-  :global(.gh-contribute .react-activity-calendar__count) {
-    color: rgb(var(--black));
-  }
-  :global(.gh-contribute article.react-activity-calendar) {
-    width: max-content !important;
-    max-width: none !important;
-    min-width: 100%;
-  }
-  :global(.gh-contribute .react-activity-calendar svg) {
-    display: block;
-    width: auto;
-    max-width: none;
-    height: auto;
-  }
-  :global(.gh-contribute .react-activity-calendar__legend-colors rect) {
-    rx: var(--radius-ui);
-  }
-  :global(.gh-contribute .react-activity-calendar__scroll-container) {
-    width: max-content;
-    max-width: none !important;
-    overflow-x: visible !important;
-    overflow-y: hidden !important;
+  .calendar-error {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
   }
 </style>

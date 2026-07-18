@@ -70,8 +70,8 @@ export const HOME = {
 export const GH_CONTRIBUTE = {
   title: "GitHub 活跃度",
   description: "最近一年的开源贡献记录",
-  username: "withastro",
-  profileUrl: "https://github.com/withastro",
+  username: "kevynf",
+  profileUrl: "https://github.com/kevynf",
   errorMessage: "GitHub 贡献图暂时不可用。",
 } as const;
 

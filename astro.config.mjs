@@ -1,7 +1,6 @@
 // @ts-check
 
 import mdx from '@astrojs/mdx';
-import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import { SITE_URL } from './src/consts';
@@ -10,7 +9,7 @@ import { SITE_URL } from './src/consts';
 export default defineConfig({
 	site: process.env.SITE_URL ?? SITE_URL,
 	base: process.env.BASE_PATH ?? '/',
-	integrations: [mdx(), sitemap(), react()],
+	integrations: [mdx(), sitemap()],
 	markdown: {
 		shikiConfig: {
 			themes: {

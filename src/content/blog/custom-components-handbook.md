@@ -217,25 +217,25 @@ tags:
 
 - 无组件参数。
 
-## GitHubCalendarWidget.tsx
+## GitHubCalendar.astro
 
 **功能**
 
-- 基于 `react-github-calendar` 渲染响应式贡献热力图，并自动跟随主题切换。
+- 使用构建阶段获取的数据渲染静态 SVG 贡献热力图，并自动跟随主题切换。
 
 **使用方法**
 
 ```astro
-<GitHubCalendarWidget client:visible username="withastro" errorMessage="加载失败" />
+<GitHubCalendar contributions={contributions} totalCount={totalCount} />
 ```
 
 **consts.ts 如何设置**
 
-- 该组件通常由 `GitHubContribute.astro` 读取 `GH_CONTRIBUTE` 后间接调用。
+- 该组件由 `GitHubContribute.astro` 在构建阶段获取数据后调用。
 
 **可选参数**
 
-- 无可选参数，`username` 与 `errorMessage` 为必填。
+- 无可选参数，`contributions` 与 `totalCount` 为必填。
 
 ## CommentSection.astro
 
