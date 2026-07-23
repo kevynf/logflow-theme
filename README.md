@@ -1,5 +1,7 @@
 # LogFlow Theme
 
+[简体中文](README.md) | [English](README.en.md)
+
 一个简洁、内容优先的 Astro 博客主题，适合中文写作、个人主页和技术文档。
 
 > A compact, content-first Astro theme for blogs and personal sites.
@@ -10,6 +12,7 @@
 
 - Markdown/MDX、代码高亮、一键复制和可选文章头图
 - 专题、标签、年份归档、友链和 About 页面
+- 零依赖静态文章搜索，支持标题、摘要和标签
 - 明暗主题、响应式移动端导航和键盘焦点样式
 - RSS、sitemap、canonical、Open Graph 和 Twitter Card
 - 可选 Giscus 评论与 GitHub 活跃度组件
@@ -49,6 +52,7 @@ npm run preview
 | `HOME` | 首页头像、简介、格言和文章数量 | 否 |
 | `GH_CONTRIBUTE` | GitHub 活跃度区块 | 否 |
 | `COMMENTS` | Giscus 评论系统 | 否 |
+| `SEARCH` | 搜索开关和最大结果数 | 否 |
 
 友链位于 `src/config/friend-links.ts`，按 `FriendLink` 接口添加即可；未填写 `avatar` 时自动使用 favicon。
 
@@ -84,6 +88,12 @@ heroImage: ./cover.png
 ```
 
 `title`、`description` 和 `pubDate` 必填，其余字段可选。无 `heroImage` 时不会出现破损图片或空的社交图片元信息。
+
+## 搜索
+
+搜索索引在构建时生成，仅包含 `src/content/blog/` 中文章的标题、摘要和标签，不会收录正文。索引会在首次打开搜索时由浏览器加载，不依赖服务端或第三方搜索服务。
+
+点击 Header 中的搜索图标，或按 `Ctrl/Command + K`、`/` 打开搜索；使用 `↑`、`↓` 选择结果，按 `Enter` 打开。通过 `src/consts.ts` 中的 `SEARCH.enabled` 控制入口，通过 `SEARCH.maxResults` 设置最多显示的结果数。
 
 ## Giscus
 

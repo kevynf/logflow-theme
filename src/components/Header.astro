@@ -1,7 +1,8 @@
 ---
-import { NAV_LINKS, SITE_TITLE } from "../consts";
+import { NAV_LINKS, SEARCH, SITE_TITLE } from "../consts";
 import { isRouteActive, withBase } from "../utils/withBase";
 import HeaderLink from "./HeaderLink.astro";
+import SearchDialog from "./SearchDialog.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 const currentSection = NAV_LINKS.find((link) => isRouteActive(Astro.url.pathname, link.href))?.label ?? "首页";
@@ -9,7 +10,7 @@ const currentSection = NAV_LINKS.find((link) => isRouteActive(Astro.url.pathname
 <header class="site-header"><div class="header-inner">
   <div class="brand-lockup"><a class="brand" href={withBase("/")}>{SITE_TITLE}</a><span aria-hidden="true">/</span><span class="current-section">{currentSection}</span></div>
   <nav class="desktop-nav" aria-label="主导航">{NAV_LINKS.map((link,index) => <HeaderLink href={link.href}><span class="nav-index">{String(index+1).padStart(2,"0")}</span><span class="nav-label">{link.label}</span></HeaderLink>)}</nav>
-  <div class="actions"><ThemeToggle /><button id="menu-toggle" class="menu-toggle" type="button" aria-label="展开导航" aria-controls="mobile-nav" aria-expanded="false"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>
+  <div class="actions">{SEARCH.enabled && <SearchDialog />}<ThemeToggle /><button id="menu-toggle" class="menu-toggle" type="button" aria-label="展开导航" aria-controls="mobile-nav" aria-expanded="false"><svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><svg class="close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>
   <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" aria-hidden="true">{NAV_LINKS.map((link,index) => <HeaderLink href={link.href} tabindex="-1"><span class="nav-index">{String(index+1).padStart(2,"0")}</span><span class="nav-label">{link.label}</span></HeaderLink>)}</nav>
 </div></header>
 <script>

@@ -1,0 +1,279 @@
+---
+import { SEARCH } from "../consts";
+import { withBase } from "../utils/withBase";
+
+const indexUrl = withBase("/search-index.json");
+---
+
+<div class="search" data-search data-index-url={indexUrl} data-max-results={SEARCH.maxResults}>
+  <button
+    class="search-trigger"
+    type="button"
+    aria-label="搜索文章"
+    aria-haspopup="dialog"
+    aria-controls="search-dialog"
+    aria-keyshortcuts="Control+K Meta+K /"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+  </button>
+
+  <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+    <div class="search-panel">
+      <header class="search-head">
+        <svg class="search-input-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <label id="search-title" class="sr-only" for="site-search-input">搜索文章</label>
+        <input
+          id="site-search-input"
+          class="search-input"
+          type="search"
+          placeholder="搜索标题、描述或标签"
+          autocomplete="off"
+          spellcheck="false"
+          role="combobox"
+          aria-controls="search-results"
+          aria-autocomplete="list"
+          aria-expanded="false"
+        />
+        <button class="search-close" type="button" aria-label="关闭搜索">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+        </button>
+      </header>
+      <div class="search-body">
+        <p class="search-status" role="status" aria-live="polite">输入关键词搜索文章</p>
+        <ol id="search-results" class="search-results" role="listbox" hidden></ol>
+      </div>
+      <footer class="search-help" aria-hidden="true">
+        <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
+        <span><kbd>Enter</kbd> 打开</span>
+        <span><kbd>Esc</kbd> 关闭</span>
+      </footer>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  import {
+    getSearchTerms,
+    prepareSearchIndex,
+    rankSearchResults,
+    type PreparedSearchIndexItem,
+    type SearchIndexItem,
+  } from "../utils/search";
+
+  const appendHighlightedText = (target: HTMLElement, text: string, terms: string[]) => {
+    if (terms.length === 0) {
+      target.textContent = text;
+      return;
+    }
+
+    const escaped = terms
+      .sort((a, b) => b.length - a.length)
+      .map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const matcher = new RegExp(`(${escaped.join("|")})`, "giu");
+    const exactMatch = new RegExp(`^(?:${escaped.join("|")})$`, "iu");
+
+    for (const part of text.split(matcher)) {
+      if (!part) continue;
+      const node = exactMatch.test(part) ? document.createElement("mark") : document.createTextNode(part);
+      node.textContent = part;
+      target.append(node);
+    }
+  };
+
+  document.querySelectorAll<HTMLElement>("[data-search]").forEach((root) => {
+    const trigger = root.querySelector<HTMLButtonElement>(".search-trigger");
+    const dialog = root.querySelector<HTMLDialogElement>(".search-dialog");
+    const closeButton = root.querySelector<HTMLButtonElement>(".search-close");
+    const input = root.querySelector<HTMLInputElement>(".search-input");
+    const status = root.querySelector<HTMLElement>(".search-status");
+    const results = root.querySelector<HTMLOListElement>(".search-results");
+    const indexUrl = root.dataset.indexUrl;
+    const maxResults = Number(root.dataset.maxResults) || 8;
+    if (!trigger || !dialog || !closeButton || !input || !status || !results || !indexUrl) return;
+
+    let items: PreparedSearchIndexItem[] | null = null;
+    let loadPromise: Promise<PreparedSearchIndexItem[]> | null = null;
+    let resizeAnimation: Animation | null = null;
+    let activeIndex = -1;
+
+    const animateDialogResize = (previousHeight: number) => {
+      if (!dialog.open || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const nextHeight = dialog.getBoundingClientRect().height;
+      if (Math.abs(nextHeight - previousHeight) < 1) return;
+      resizeAnimation?.cancel();
+      resizeAnimation = dialog.animate(
+        [{ height: `${previousHeight}px` }, { height: `${nextHeight}px` }],
+        { duration: 160, easing: "ease-out" },
+      );
+    };
+
+    const loadIndex = () => {
+      if (items) return Promise.resolve(items);
+      if (!loadPromise) {
+        loadPromise = fetch(indexUrl)
+          .then((response) => {
+            if (!response.ok) throw new Error(`Search index request failed: ${response.status}`);
+            return response.json() as Promise<SearchIndexItem[]>;
+          })
+          .then((documents) => {
+            items = prepareSearchIndex(documents);
+            return items;
+          });
+      }
+      return loadPromise;
+    };
+
+    const setActiveResult = (index: number) => {
+      const links = Array.from(results.querySelectorAll<HTMLAnchorElement>("a"));
+      activeIndex = links.length === 0 ? -1 : index < 0 ? links.length - 1 : index % links.length;
+      links.forEach((link, linkIndex) => {
+        const active = linkIndex === activeIndex;
+        link.classList.toggle("is-active", active);
+        link.setAttribute("aria-selected", String(active));
+      });
+      input.setAttribute("aria-activedescendant", activeIndex >= 0 ? links[activeIndex].id : "");
+      links[activeIndex]?.scrollIntoView({ block: "nearest" });
+    };
+
+    const renderResults = (query: string) => {
+      const previousHeight = dialog.getBoundingClientRect().height;
+      const terms = getSearchTerms(query);
+      results.replaceChildren();
+      activeIndex = -1;
+
+      if (terms.length === 0) {
+        results.hidden = true;
+        status.hidden = false;
+        status.textContent = "输入关键词搜索文章";
+        input.removeAttribute("aria-activedescendant");
+        animateDialogResize(previousHeight);
+        return;
+      }
+      if (!items) {
+        animateDialogResize(previousHeight);
+        return;
+      }
+
+      const matches = rankSearchResults(items, terms, maxResults);
+
+      if (matches.length === 0) {
+        results.hidden = true;
+        status.hidden = false;
+        status.textContent = `没有找到与“${query.trim()}”相关的文章`;
+        animateDialogResize(previousHeight);
+        return;
+      }
+
+      for (const [index, item] of matches.entries()) {
+        const listItem = document.createElement("li");
+        const link = document.createElement("a");
+        const title = document.createElement("strong");
+        const description = document.createElement("span");
+        link.id = `search-result-${index}`;
+        link.href = item.url;
+        link.setAttribute("role", "option");
+        link.setAttribute("aria-selected", "false");
+        appendHighlightedText(title, item.title, [...terms]);
+        appendHighlightedText(description, item.description, [...terms]);
+        link.append(title, description);
+        link.addEventListener("pointerenter", () => setActiveResult(index));
+        listItem.append(link);
+        results.append(listItem);
+      }
+
+      status.hidden = true;
+      results.hidden = false;
+      input.removeAttribute("aria-activedescendant");
+      animateDialogResize(previousHeight);
+    };
+
+    const openSearch = () => {
+      if (!dialog.open) dialog.showModal();
+      input.setAttribute("aria-expanded", "true");
+      status.hidden = false;
+      status.textContent = items ? "输入关键词搜索文章" : "正在加载搜索索引…";
+      requestAnimationFrame(() => input.focus());
+      loadIndex()
+        .then(() => renderResults(input.value))
+        .catch(() => {
+          loadPromise = null;
+          status.hidden = false;
+          results.hidden = true;
+          status.textContent = "搜索索引加载失败，请稍后重试";
+        });
+    };
+
+    trigger.addEventListener("click", openSearch);
+    closeButton.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener("close", () => {
+      input.setAttribute("aria-expanded", "false");
+      trigger.focus();
+      activeIndex = -1;
+    });
+    input.addEventListener("input", () => renderResults(input.value));
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setActiveResult(activeIndex + 1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setActiveResult(activeIndex - 1);
+      } else if (event.key === "Enter" && activeIndex >= 0) {
+        const activeLink = results.querySelectorAll<HTMLAnchorElement>("a")[activeIndex];
+        if (activeLink) {
+          event.preventDefault();
+          activeLink.click();
+        }
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && dialog.open) {
+        event.preventDefault();
+        dialog.close();
+        return;
+      }
+      const target = event.target;
+      const isEditable = target instanceof HTMLElement &&
+        (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+      const commandShortcut = (event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "k";
+      const slashShortcut = event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey && !isEditable;
+      if (commandShortcut || slashShortcut) {
+        event.preventDefault();
+        openSearch();
+      }
+    });
+  });
+</script>
+
+<style>
+  .search { display:flex; }
+  .search-trigger,.search-close { display:grid; width:2.25rem; height:2.25rem; padding:0; place-items:center; border:0; border-radius:var(--radius-ui); background:transparent; color:var(--text-secondary); cursor:pointer; transition:background-color .16s ease,color .16s ease; }
+  .search-trigger:hover,.search-close:hover { background:var(--background-elevated); color:var(--accent); }
+  .search-trigger svg,.search-close svg,.search-input-icon { width:1.125rem; height:1.125rem; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .search-dialog { --search-dialog-top:clamp(2rem,10dvh,6rem); --search-dialog-bottom:1rem; --search-dialog-max-height:min(38rem,calc(100dvh - var(--search-dialog-top) - var(--search-dialog-bottom))); inset-block:var(--search-dialog-top) auto; width:min(38rem,calc(100% - 2rem)); max-height:var(--search-dialog-max-height); margin-block:0; margin-inline:auto; padding:0; overflow:hidden; border:0; border-radius:var(--radius-ui); background:var(--background-elevated); color:var(--text-secondary); box-shadow:0 18px 60px rgba(0,0,0,.2); }
+  .search-dialog::backdrop { background:rgba(15,18,20,.5); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
+  .search-panel { display:grid; max-height:var(--search-dialog-max-height); grid-template-rows:auto minmax(8rem,1fr) auto; }
+  .search-head { display:grid; grid-template-columns:auto minmax(0,1fr) auto; padding:.65rem; align-items:center; gap:.5rem; background:var(--background-elevated); }
+  .search-input-icon { color:var(--text-muted); }
+  .search-input { width:100%; min-width:0; padding:.4rem .6rem; border:0; border-radius:var(--radius-ui); outline:0; background:var(--background-body); color:var(--text-primary); font-size:var(--text-md); }
+  .search-input::placeholder { color:var(--text-muted); }
+  .search-input::-webkit-search-cancel-button { display:none; }
+  .search-body { min-height:8rem; max-height:min(26rem,max(8rem,calc(100dvh - 8rem))); overflow-y:auto; overscroll-behavior:contain; }
+  .search-status { margin:0; padding:2.5rem 1rem; color:var(--text-muted); text-align:center; }
+  .search-results { margin:0; padding:.25rem; list-style:none; }
+  .search-results :global(li) { margin:0; }
+  .search-results :global(a) { display:grid; padding:.45rem .5rem; color:var(--text-secondary); text-decoration:none; }
+  .search-results :global(strong) { color:var(--text-primary); font-size:var(--text-md); line-height:var(--line-height-compact); transition:color .16s ease; }
+  .search-results :global(a.is-active strong) { color:var(--accent); }
+  .search-results :global(span) { display:-webkit-box; margin-top:.15rem; overflow:hidden; color:var(--text-secondary); font-size:var(--text-sm); line-height:var(--line-height-compact); -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+  .search-results :global(mark) { padding:0; background:transparent; color:inherit; font-weight:var(--weight-bold); }
+  .search-help { display:flex; min-height:2.5rem; padding:.45rem .75rem; align-items:center; justify-content:flex-end; gap:1rem; color:var(--text-muted); font-size:var(--text-xs); }
+  .search-help span { display:inline-flex; flex:none; align-items:center; gap:.25rem; white-space:nowrap; }
+  kbd { min-width:1.35rem; padding:.05rem .25rem; border:0; border-radius:3px; background:var(--background-body); color:var(--text-secondary); font-family:var(--font-family-mono); font-size:.68rem; line-height:1.4; text-align:center; }
+  @media (max-width:560px) { .search-dialog { --search-dialog-top:.5rem; --search-dialog-bottom:.5rem; width:calc(100% - 1rem); } .search-help { justify-content:center; gap:.65rem; } }
+  @media (max-width:380px) { .search-help { padding-inline:.45rem; gap:.4rem; } }
+</style>

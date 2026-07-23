@@ -75,6 +75,12 @@ export const GH_CONTRIBUTE = {
   errorMessage: "GitHub 贡献图暂时不可用。",
 } as const;
 
+// 静态全文搜索；关闭后 Header 不渲染搜索入口。
+export const SEARCH = {
+  enabled: true,
+  maxResults: 8,
+} as const;
+
 // 友链数据维护在独立文件中。
 export { FRIEND_LINKS } from "./config/friend-links";
 
