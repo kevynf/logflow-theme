@@ -1,5 +1,6 @@
 ---
 import { withBase } from "../utils/withBase";
+import Badge from "./Badge.astro";
 ---
 
-<a class="archive-link" href={withBase("/blog/years/")}>时间机器 <span aria-hidden="true">→</span></a>
+<Badge href={withBase("/blog/years/")}>时间机器</Badge>

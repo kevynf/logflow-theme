@@ -10,7 +10,7 @@ tags:
   - Template
 ---
 
-全站可复用配置集中在 `src/consts.ts`。页面内容、文章 frontmatter 和纯视觉样式不放在这里：文章内容由 `src/content/` 管理，颜色、字号与间距由 `src/styles/global.css` 管理。
+全站可复用配置集中在 `src/consts.ts`。页面内容、文章 frontmatter 和纯视觉样式不放在这里：文章内容由 `src/content/` 管理，颜色、字号与间距由 `src/styles/global.css` 的 Tailwind 主题令牌管理。搜索索引由构建时从文章集合生成，`SEARCH` 只控制搜索入口和结果数量。
 
 ## 站点基础信息
 
@@ -43,7 +43,7 @@ export const SITE_URL = "https://example.com";
 页脚版权名称，可以填写个人名、组织名或品牌名。
 
 ```ts
-export const COPYRIGHT_NAME = "Your Name";
+export const COPYRIGHT_NAME = "LogFlow Theme";
 ```
 
 ## 页面标题与概述
@@ -110,7 +110,7 @@ export const NAV_LINKS = [
 export const SOCIAL_LINKS = [
   {
     label: "GitHub",
-    href: "https://github.com/your-name",
+    href: "https://github.com/kevynf/logflow-theme",
     icon: "social/github",
   },
 ] as const;
@@ -129,7 +129,7 @@ export const SOCIAL_LINKS = [
 ```ts
 export const HOME = {
   avatar: {
-    src: "https://github.com/identicons/logflow-theme.png?size=256",
+    src: "/favicon.svg",
     alt: "LogFlow Theme avatar",
   },
   motto: "Build in public.",
@@ -152,8 +152,8 @@ export const HOME = {
 export const GH_CONTRIBUTE = {
   title: "GitHub 活跃度",
   description: "最近一年的开源贡献记录",
-  username: "withastro",
-  profileUrl: "https://github.com/withastro",
+  username: "octocat",
+  profileUrl: "https://github.com/octocat",
   errorMessage: "GitHub 贡献图暂时不可用。",
 } as const;
 ```
@@ -162,6 +162,8 @@ export const GH_CONTRIBUTE = {
 - `username`：贡献图对应的 GitHub 用户名。
 - `profileUrl`：点击区块后前往的 GitHub 主页。
 - `errorMessage`：贡献图加载失败时显示的提示。
+
+构建阶段通过 `GITHUB_TOKEN` 或 `GH_TOKEN` 访问 GitHub GraphQL API。令牌缺失或请求失败时只显示 `errorMessage`，不会使其他页面停止生成；部署工作流应在构建步骤注入令牌。
 
 ## 友链
 
@@ -179,13 +181,13 @@ export const FRIEND_LINKS = [
 ```
 
 - `name`：站点名称，必填。
-- `link`：站点地址；旧数据中的 `url` 仍兼容。
+- `link`：站点地址；旧数据中的 `url` 仍兼容。展示页会在新字段为空时回退到 `url`。
 - `avatar`：头像地址，可选；缺失时显示站点名称首字。
-- `desc`：一句话简介；旧数据中的 `description` 仍兼容。
+- `desc`：一句话简介；旧数据中的 `description` 仍兼容。首页交换信息中的本站简介来自 `HOME.motto`。
 
 ## 搜索
 
-`SEARCH` 控制静态文章搜索的入口与结果数量。
+`SEARCH` 控制页头是否显示文章搜索入口，以及搜索结果的最大数量。索引由 `src/pages/search-index.json.ts` 在构建时生成，搜索内容包括文章标题、描述和标签。
 
 ```ts
 export const SEARCH = {
@@ -194,8 +196,8 @@ export const SEARCH = {
 } as const;
 ```
 
-- `enabled`：设为 `false` 后 Header 不渲染搜索入口。
-- `maxResults`：搜索结果最多展示条数。
+- `enabled`：设为 `false` 时不渲染页头搜索按钮。
+- `maxResults`：单次最多显示的匹配文章数。
 
 ## 评论
 
@@ -203,12 +205,12 @@ export const SEARCH = {
 
 ```ts
 export const COMMENTS = {
-  enabled: true,
+  enabled: false,
   provider: "giscus",
   repo: "owner/repository",
-  repoId: "R_...",
+  repoId: "",
   category: "Announcements",
-  categoryId: "DIC_...",
+  categoryId: "",
   mapping: "pathname",
   themeLight: "light_protanopia",
   themeDark: "transparent_dark",
@@ -224,7 +226,7 @@ export const COMMENTS = {
 - `themeLight`、`themeDark`：跟随站点明暗模式切换的 giscus 主题。
 - `lang`：giscus 界面语言。
 
-仓库和分类 ID 可通过 [giscus 配置页](https://giscus.app/zh-CN) 获取。
+评论默认关闭，`enabled` 为 `false` 时不渲染评论区；启用步骤见 [Giscus 配置速览](/blog/giscus-configuration-quickstart/)。仓库和分类 ID 可通过 [giscus 配置页](https://giscus.app/zh-CN) 获取。
 
 ## 推荐修改顺序
 

@@ -1,8 +1,13 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import Badge from "../components/Badge.astro";
 import CommentSection from "../components/CommentSection.astro";
 import FormattedDate from "../components/FormattedDate.astro";
+import Meta from "../components/Meta.astro";
+import Prose from "../components/Prose.astro";
+import Box from "../components/layout/Box.astro";
+import Cell from "../components/layout/Cell.astro";
 import { collectionPath, estimateReadingMinutes, tagPath } from "../utils/content";
 import { withBase } from "../utils/withBase";
 import SiteLayout from "./SiteLayout.astro";
@@ -11,24 +16,44 @@ type BlogPostData = CollectionEntry<"blog">["data"];
 interface Props extends BlogPostData { body?: string; enableComments?: boolean }
 const { title, description, pubDate, updatedDate, heroImage, collection, tags = [], body = "", enableComments = false } = Astro.props;
 ---
+
 <SiteLayout title={title} description={description} image={heroImage} type="article">
-  <article class="post-article">
-    <header class="post-header">
-      <nav aria-label="面包屑"><ol><li><a href={withBase("/blog/")}>文章</a></li>{collection && <li><a href={withBase(collectionPath(collection))}>{collection}</a></li>}</ol></nav>
-      <h1>{title}</h1>
-      <p class="description">{description}</p>
-      <dl class="meta"><div><dt>发布于</dt><dd><FormattedDate date={pubDate} /></dd></div>{updatedDate && <div><dt>更新于</dt><dd><FormattedDate date={updatedDate} /></dd></div>}<div><dt>阅读时间</dt><dd>约 {estimateReadingMinutes(body)} 分钟</dd></div></dl>
-      {tags.length > 0 && <ul class="tags" aria-label="文章标签">{tags.map((tag) => <li><a href={withBase(tagPath(tag))}>#{tag}</a></li>)}</ul>}
-    </header>
-    {heroImage && <div class="hero-image"><Image width={840} height={420} src={heroImage} alt={title} /></div>}
-    <div class="prose content-prose"><slot />{enableComments && <CommentSection />}</div>
-  </article>
+  <Box as="header">
+    <Cell variant="header">
+      <nav aria-label="面包屑">
+        <ol class="flex flex-wrap items-center gap-x-2 text-label text-subtle">
+          <li><a class="no-underline hover:text-accent" href={withBase("/blog/")}>文章</a></li>
+          {collection && (
+            <li class="flex items-center gap-x-2">
+              <span aria-hidden="true">/</span>
+              <a class="no-underline hover:text-accent" href={withBase(collectionPath(collection))}>{collection}</a>
+            </li>
+          )}
+        </ol>
+      </nav>
+      <h1 class="mt-1 min-w-0 text-title text-heading">{title}</h1>
+      <p class="mt-1 text-body">{description}</p>
+    </Cell>
+    <Cell class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      {tags.length > 0 && (
+        <ul class="flex flex-wrap gap-1.5" aria-label="文章标签">
+          {tags.map((tag) => <li><Badge href={withBase(tagPath(tag))}>{tag}</Badge></li>)}
+        </ul>
+      )}
+      <Meta class="ml-auto">
+        <FormattedDate date={pubDate} />
+        {updatedDate && <span>更新 <FormattedDate date={updatedDate} /></span>}
+        <span>{estimateReadingMinutes(body)} 分钟</span>
+      </Meta>
+    </Cell>
+  </Box>
+  {heroImage && (
+    <Box>
+      <Image class="w-full" width={840} height={420} src={heroImage} alt={title} />
+    </Box>
+  )}
+  <Prose>
+    <slot />
+  </Prose>
+  {enableComments && <CommentSection />}
 </SiteLayout>
-<style>
-  .post-header,.prose { width:var(--reading-max-width); max-width:100%; margin-right:auto; margin-left:auto; }
-  .post-header { margin-bottom:1.4rem; }
-  nav { margin-bottom:.55rem; color:var(--text-muted); font-size:var(--text-xs); } nav ol { display:flex; margin:0; padding:0; list-style:none; } nav li + li::before { margin:0 .4rem; content:"/"; } nav a { color:var(--text-muted); text-decoration:none; }
-  h1 { min-width:0; margin:0; font-size:var(--text-3xl); line-height:var(--line-height-tight); letter-spacing:0; overflow-wrap:anywhere; }
-  .description { margin:.45rem 0 0; color:var(--text-secondary); font-size:var(--text-sm); } .meta,.tags { display:flex; margin:.55rem 0 0; padding:0; flex-wrap:wrap; gap:.35rem .8rem; color:var(--text-muted); font-size:var(--text-xs); } .meta > div { display:flex; gap:.25rem; } .meta dt,.meta dd { margin:0; } .tags { margin-top:.35rem; list-style:none; } .tags a { text-decoration:none; }
-  .hero-image { margin-bottom:1.4rem; } .hero-image img { width:100%; }
-</style>

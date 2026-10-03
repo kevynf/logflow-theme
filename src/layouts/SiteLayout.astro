@@ -24,7 +24,7 @@ const { title, description, lang = "zh-CN", image, type = "website" } = Astro.pr
     <BaseHead title={title} description={description} image={image} type={type} />
     <slot name="head" />
   </head>
-  <body>
+  <body class="isolate flex min-h-screen flex-col bg-page font-sans text-content antialiased">
     <PixelHeroCanvas />
     <Header />
     <PageContainer>

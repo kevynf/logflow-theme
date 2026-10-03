@@ -1,25 +1,31 @@
-# LogFlow Theme
+<div align="center">
+  <img src="public/favicon.svg" alt="LogFlow Theme" width="72" />
 
-[简体中文](README.md) | [English](README.en.md)
+  # LogFlow Theme
 
-一个简洁、内容优先的 Astro 博客主题，适合中文写作、个人主页和技术文档。
+  [简体中文](README.md) | [English](README.en.md)
+</div>
 
-> A compact, content-first Astro theme for blogs and personal sites.
+> [!NOTE]
+> 一个简洁、内容优先的 Astro 博客主题，适合中文写作、个人主页和技术文档。
+
+> [!WARNING]
+> 本主题仍处于快速迭代阶段，更新可能包含破坏性变更。建议 Fork 本仓库并锁定某个提交后进行二次开发，而非直接追随 `main` 分支。
 
 <table>
   <tr>
     <td colspan="2" align="center"><img src="public/screenshots/overview.png" alt="主题总览 · 深色首页" width="100%" /></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="public/screenshots/pixel-hero.gif" alt="像素流体动画 · 深色" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/article-dark.png" alt="文章页 · 深色" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/friends-dark.png" alt="友链页 · 深色" width="100%" /></td>
   </tr>
   <tr>
-    <td align="center"><img src="public/screenshots/article-dark.png" alt="文章页 · 深色" width="100%" /></td>
-    <td align="center"><img src="public/screenshots/gh-wall-dark.png" alt="GitHub 活跃度 · 深色" width="100%" /></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="public/screenshots/friends-dark.png" alt="友链页 · 深色" width="100%" /></td>
-    <td align="center"><img src="public/screenshots/home-light.png" alt="首页 · 浅色" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/home-light.png" alt="首页 · 浅色" width="100%" /></td>
+    <td align="center" width="50%">
+      <img src="public/screenshots/pixel-hero.gif" alt="像素流体动画 · 深色" width="100%" />
+      <img src="public/screenshots/gh-wall-dark.png" alt="GitHub 活跃度 · 深色" width="100%" />
+    </td>
   </tr>
 </table>
 
@@ -31,6 +37,7 @@
 - 全站像素流体动画背景：零依赖 WebGL 实现，跟随明暗主题配色，支持 reduced-motion 与 WebGL 不可用降级
 - ClientRouter 无缝换页与链接预加载，动画跨页持续播放
 - 明暗主题、响应式移动端导航和键盘焦点样式
+- 基于 Tailwind v4 的卡片式布局原语（Box/Cell）与设计令牌，组件与页面复用同一套工具类
 - RSS、sitemap、canonical、Open Graph 和 Twitter Card
 - 可选 Giscus 评论与 GitHub 活跃度组件
 - GitHub Pages 自动构建部署
@@ -73,7 +80,7 @@ npm run preview
 
 友链位于 `src/config/friend-links.ts`，按 `FriendLink` 接口添加即可；未填写 `avatar` 时显示站点名称首字。
 
-颜色、字体、间距、宽度和圆角等设计令牌位于 `src/styles/global.css` 顶部的 CSS 变量中。
+颜色、字体、间距、宽度和圆角等设计令牌位于 `src/styles/global.css` 顶部的 Tailwind v4 `@theme` 中；页面与 MDX 正文可直接使用 Tailwind 工具类，文章排版由 `@tailwindcss/typography` 的 `prose` 容器统一提供。站点名称与正文使用同一套系统无衬线字体栈，不依赖额外字体文件。
 
 ## 写作
 
@@ -118,7 +125,7 @@ heroImage: ./cover.png
 
 ## 图片与头像
 
-- 头像：省略 `avatar` 即使用 `public/favicon.svg`。
+- 头像：`HOME.avatar` 维护站点头像，默认为 `public/favicon.svg`；友链的 `avatar` 可省略，省略时显示站点名称首字。
 - 文章图片：可放在文章目录并通过 `heroImage` 引用，但不是必需项。
 - favicon：替换 `public/favicon.svg` 即可更新默认头像和站点图标。
 
@@ -131,7 +138,7 @@ heroImage: ./cover.png
 - 站点文案与行为：`src/consts.ts`
 - 友链：`src/config/friend-links.ts`
 - 文章与 About：`src/content/`
-- 颜色、字体、间距和布局密度：`src/styles/global.css`
+- 颜色、字体、间距和布局密度：`src/styles/global.css` 的 Tailwind `@theme` 令牌与自定义工具类
 - 页面结构：`src/pages/`、`src/layouts/`、`src/components/`
 
 优先通过配置和内容完成定制，只有需要改变结构时才修改组件或布局。

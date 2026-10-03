@@ -1,9 +1,12 @@
 ---
 import { GH_CONTRIBUTE } from "../consts";
-import { fetchGitHubContributions } from "../utils/githubContributions";
+import { fetchGitHubContributions, type GitHubContributionData } from "../utils/githubContributions";
 import GitHubCalendar from "./GitHubCalendar.astro";
+import Count from "./Count.astro";
+import Box from "./layout/Box.astro";
+import Cell from "./layout/Cell.astro";
 
-let contributionData = null;
+let contributionData: GitHubContributionData | null = null;
 
 try {
   contributionData = await fetchGitHubContributions(GH_CONTRIBUTE.username);
@@ -13,45 +16,21 @@ try {
 }
 ---
 
-<section class="gh-contribute">
-  <header class="section-head">
-    <h2><a href={GH_CONTRIBUTE.profileUrl} target="_blank" rel="noopener noreferrer">{GH_CONTRIBUTE.title}</a></h2>
-    <p>{GH_CONTRIBUTE.description}</p>
-  </header>
-  {
-    contributionData ? (
+<Box as="section">
+  <Cell as="header" variant="header">
+    <div class="flex flex-wrap items-center gap-2">
+      <h2 class="text-section whitespace-nowrap">
+        <a class="text-heading no-underline hover:text-accent" href={GH_CONTRIBUTE.profileUrl} target="_blank" rel="noopener noreferrer">{GH_CONTRIBUTE.title}</a>
+      </h2>
+      {contributionData && <Count value={contributionData.totalCount} unit="次贡献" />}
+    </div>
+    <p class="mt-1 text-body text-subtle">{GH_CONTRIBUTE.description}</p>
+  </Cell>
+  <Cell>
+    {contributionData ? (
       <GitHubCalendar {...contributionData} />
     ) : (
-      <p class="calendar-error">{GH_CONTRIBUTE.errorMessage}</p>
-    )
-  }
-</section>
-
-<style>
-  .gh-contribute {
-    margin-top: 0;
-    width: 100%;
-    min-width: 0;
-  }
-  .section-head h2 {
-    margin-bottom: 0.35rem;
-    font-size: var(--text-lg);
-  }
-  .section-head h2 a {
-    color: var(--text-primary);
-    text-decoration: none;
-  }
-  .section-head h2 a:hover {
-    color: var(--accent);
-  }
-  .section-head p {
-    margin: 0 0 0.75rem;
-    color: rgb(var(--gray));
-    font-size: var(--text-sm);
-  }
-  .calendar-error {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-  }
-</style>
+      <p class="text-body text-subtle">{GH_CONTRIBUTE.errorMessage}</p>
+    )}
+  </Cell>
+</Box>

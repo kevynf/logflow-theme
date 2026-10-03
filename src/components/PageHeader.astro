@@ -1,9 +1,27 @@
 ---
-interface Props { title: string; description?: string; meta?: string; descriptionItalic?: boolean }
-const { title, description, meta, descriptionItalic = false } = Astro.props;
+import Box from "./layout/Box.astro";
+import Cell from "./layout/Cell.astro";
+import Count from "./Count.astro";
+
+interface Props { title: string; description?: string; count?: { value: number; unit: string }; descriptionItalic?: boolean }
+const { title, description, count, descriptionItalic = false } = Astro.props;
 const hasDescriptionAction = Astro.slots.has("description-action");
+const hasDescriptionSlot = Astro.slots.has("description");
 ---
-<header class="page-header">
-  <div class="page-header-title-line"><h1>{title}</h1>{meta && <p class="page-header-meta">{meta}</p>}</div>
-  {(description || hasDescriptionAction) && <div class="page-header-description-line">{description && <p class:list={{ "is-italic": descriptionItalic }}>{description}</p>}{hasDescriptionAction && <slot name="description-action" />}</div>}
-</header>
+
+<Box as="header">
+  <Cell variant="header">
+    <div class="flex items-center gap-2">
+      <h1 class="min-w-0 text-title text-heading">{title}</h1>
+      {count && <Count {...count} />}
+    </div>
+    {(description || hasDescriptionSlot || hasDescriptionAction) && (
+      <div class="mt-1 flex items-baseline justify-between gap-3">
+        {hasDescriptionSlot ? (
+          <p class="min-w-0 text-body"><slot name="description" /></p>
+        ) : description && <p class:list={["min-w-0 text-body", { italic: descriptionItalic }]}>{description}</p>}
+        {hasDescriptionAction && <slot name="description-action" />}
+      </div>
+    )}
+  </Cell>
+</Box>

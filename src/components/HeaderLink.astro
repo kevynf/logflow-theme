@@ -16,19 +16,9 @@ const resolvedHref = typeof href === "string" ? withBase(href) : href;
 
 <a
   href={resolvedHref}
-  class:list={[className, { active: isActive }]}
+  class:list={["no-underline", className]}
   aria-current={isActive ? "page" : undefined}
   {...props}
 >
   <slot />
 </a>
-<style>
-  a {
-    display: inline-block;
-    text-decoration: none;
-  }
-  a.active {
-    color: var(--accent);
-    text-decoration: none;
-  }
-</style>

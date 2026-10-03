@@ -1,199 +1,75 @@
 ---
-import type { GitHubContribution } from "../utils/githubContributions";
-
 interface Props {
-  contributions: GitHubContribution[];
+  contributions: Array<{ date: string; count: number; level: number }>;
   totalCount: number;
 }
 
 const { contributions, totalCount } = Astro.props;
-const sortedContributions = [...contributions].sort((a, b) =>
-  a.date.localeCompare(b.date),
-);
 
-const blockSize = 12;
-const blockRadius = 2;
-const blockGap = 2;
-const cellSize = blockSize + blockGap;
-const labelWidth = 30;
-const labelHeight = 18;
-const dayMs = 86_400_000;
+const days = [...contributions].sort((a, b) => a.date.localeCompare(b.date));
+const firstDate = new Date(`${days[0].date}T00:00:00Z`);
+const leadingDays = (firstDate.getUTCDay() + 6) % 7;
+const levelClasses = ["bg-contrib-0", "bg-contrib-1", "bg-contrib-2", "bg-contrib-3", "bg-contrib-4"];
+const dayLabel = (date: string, count: number) => `${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日 · ${count} 次贡献`;
 
-const firstDate = new Date(`${sortedContributions[0].date}T00:00:00Z`);
-const firstDayOffset = firstDate.getUTCDay();
-const lastDate = new Date(
-  `${sortedContributions[sortedContributions.length - 1].date}T00:00:00Z`,
-);
-const totalDays = Math.round((lastDate.valueOf() - firstDate.valueOf()) / dayMs) + 1;
-const weekCount = Math.ceil((firstDayOffset + totalDays) / 7);
-const gridHeight = blockSize * 7 + blockGap * 6;
-const svgWidth = labelWidth + weekCount * cellSize - blockGap;
-const svgHeight = labelHeight + gridHeight;
+// 点阵主体尺寸：格 10px、列缝 4px、行缝 2px；居中以点阵自身为基准。
+const CELL = 10;
+const COL_GAP = 4;
+const ROW_GAP = 2;
 
-const levelPaths = Array.from({ length: 5 }, () => [] as string[]);
-const monthLabels: { label: string; x: number }[] = [];
-let previousMonth = -1;
+const cells = days.map((day, index) => {
+  const position = leadingDays + index;
+  return { ...day, column: Math.floor(position / 7) + 1, row: (position % 7) + 2 };
+});
 
-for (const contribution of sortedContributions) {
-  const date = new Date(`${contribution.date}T00:00:00Z`);
-  const elapsedDays = Math.round(
-    (date.valueOf() - firstDate.valueOf()) / dayMs,
-  );
-  const position = firstDayOffset + elapsedDays;
-  const column = Math.floor(position / 7);
-  const row = date.getUTCDay();
-  const x = labelWidth + column * cellSize;
-  const y = labelHeight + row * cellSize;
-  const innerSize = blockSize - blockRadius * 2;
-
-  levelPaths[contribution.level].push(
-    `M${x + blockRadius} ${y}h${innerSize}a${blockRadius} ${blockRadius} 0 0 1 ${blockRadius} ${blockRadius}v${innerSize}a${blockRadius} ${blockRadius} 0 0 1-${blockRadius} ${blockRadius}h-${innerSize}a${blockRadius} ${blockRadius} 0 0 1-${blockRadius}-${blockRadius}v-${innerSize}a${blockRadius} ${blockRadius} 0 0 1 ${blockRadius}-${blockRadius}z`,
-  );
-
-  const month = date.getUTCMonth();
-  if (month !== previousMonth) {
-    monthLabels.push({ label: `${month + 1}月`, x });
-    previousMonth = month;
-  }
+const lastColumn = cells.at(-1)?.column ?? 1;
+const monthLabels: { label: string; column: number }[] = [];
+for (const cell of cells) {
+  if (cell.date.slice(8, 10) !== "01" && cell !== cells[0]) continue;
+  if (lastColumn - cell.column < 2) continue;
+  const previous = monthLabels.at(-1);
+  if (previous && cell.column - previous.column < 3) continue;
+  monthLabels.push({ label: `${Number(cell.date.slice(5, 7))}月`, column: cell.column });
 }
-
-const weekdayLabels = [
-  { label: "一", row: 1 },
-  { label: "三", row: 3 },
-  { label: "五", row: 5 },
-];
+const weekdayLabels = [{ label: "一", row: 2 }, { label: "三", row: 4 }, { label: "五", row: 6 }];
+const weeks = cells.at(-1)?.column ?? 1;
+// 行结构：第 1 行为月份标尺，第 2~8 行为一周七天；星期标尺与点阵共用同一行结构。
+const rowTemplate = `1rem repeat(7, ${CELL}px)`;
+const fieldStyle = { gridTemplateColumns: `repeat(${weeks}, ${CELL}px)`, gridTemplateRows: rowTemplate, columnGap: `${COL_GAP}px`, rowGap: `${ROW_GAP}px` };
+const rulerStyle = { gridTemplateRows: rowTemplate, rowGap: `${ROW_GAP}px` };
 ---
 
-<div class="gh-calendar-viewport">
-  <figure class="gh-calendar">
-    <svg
-      class="gh-calendar-svg"
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      width={svgWidth}
-      height={svgHeight}
-      role="img"
-      aria-labelledby="gh-calendar-title gh-calendar-description"
-    >
-      <title id="gh-calendar-title">GitHub 贡献日历</title>
-      <desc id="gh-calendar-description">过去一年共 {totalCount} 次贡献</desc>
-      {
-        monthLabels.map(({ label, x }) => (
-          <text class="calendar-label month-label" x={x} y="10">
-            {label}
-          </text>
-        ))
-      }
-      {
-        weekdayLabels.map(({ label, row }) => (
-          <text
-            class="calendar-label weekday-label"
-            x="0"
-            y={labelHeight + row * cellSize + blockSize / 2}
-          >
-            {label}
-          </text>
-        ))
-      }
-      {
-        levelPaths.map((segments, level) => (
-          <path class={`calendar-level calendar-level-${level}`} d={segments.join("")} />
-        ))
-      }
-    </svg>
-    <figcaption>
-      <span>过去一年共 {totalCount} 次贡献</span>
-      <span class="calendar-legend" aria-label="贡献强度：少到多">
-        <span>少</span>
-        {[0, 1, 2, 3, 4].map((level) => (
-          <i class={`calendar-level-${level}`} aria-hidden="true" />
-        ))}
-        <span>多</span>
-      </span>
-    </figcaption>
-  </figure>
-</div>
-
-<style>
-  .gh-calendar-viewport {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    padding-bottom: 0.25rem;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
-  }
-  .gh-calendar {
-    width: max-content;
-    min-width: 100%;
-    margin: 0;
-    color: var(--text-primary);
-    font-family: var(--font-family-text);
-    font-size: var(--text-xs);
-  }
-  .gh-calendar-svg {
-    display: block;
-    max-width: none;
-  }
-  .calendar-label {
-    fill: var(--text-muted);
-    font-size: 12px;
-  }
-  .weekday-label {
-    dominant-baseline: middle;
-  }
-  .calendar-level {
-    fill: var(--level-color);
-    shape-rendering: geometricPrecision;
-  }
-  .calendar-level-0 {
-    --level-color: #ebedf0;
-  }
-  .calendar-level-1 {
-    --level-color: #ddf4ff;
-  }
-  .calendar-level-2 {
-    --level-color: #9ecbff;
-  }
-  .calendar-level-3 {
-    --level-color: #54aeff;
-  }
-  .calendar-level-4 {
-    --level-color: #0969da;
-  }
-  :global(html.dark) .calendar-level-0 {
-    --level-color: #21262d;
-  }
-  :global(html.dark) .calendar-level-1 {
-    --level-color: #0e4429;
-  }
-  :global(html.dark) .calendar-level-2 {
-    --level-color: #006d32;
-  }
-  :global(html.dark) .calendar-level-3 {
-    --level-color: #26a641;
-  }
-  :global(html.dark) .calendar-level-4 {
-    --level-color: #39d353;
-  }
-  figcaption {
-    display: flex;
-    margin-top: 0.5rem;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-  .calendar-legend {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-  .calendar-legend i {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-    background-color: var(--level-color);
-  }
-</style>
+<figure class="grid min-w-0 justify-items-center gap-2" aria-label={`共 ${totalCount} 次贡献`}>
+  <div class="flex w-full items-start gap-2">
+    {/* 星期标尺：固定在点阵左侧，不参与点阵宽度与居中计算 */}
+    <ol class="grid shrink-0 justify-items-end text-label leading-none text-subtle" style={{ ...rulerStyle, width: "1.25rem" }} aria-hidden="true">
+      {weekdayLabels.map(({ label, row }) => (
+        <li class="flex items-center" style={{ gridRow: row }}>{label}</li>
+      ))}
+    </ol>
+    {/* 点阵主体：窄屏整体横向滚动，宽屏以自身宽度居中 */}
+    <div class="min-w-0 flex-1 overflow-x-auto [scrollbar-width:thin]">
+      <div class="mx-auto grid w-max gap-2">
+        <ol class="grid" style={fieldStyle}>
+          {monthLabels.map(({ label, column }) => (
+            <li class="flex items-center whitespace-nowrap text-label leading-none text-subtle" style={{ gridColumn: column, gridRow: 1 }} aria-hidden="true">{label}</li>
+          ))}
+          {cells.map((cell) => (
+            <li
+              class:list={["rounded-tile", levelClasses[cell.level]]}
+              style={{ gridColumn: cell.column, gridRow: cell.row }}
+              title={dayLabel(cell.date, cell.count)}
+            >
+              <span class="sr-only">{dayLabel(cell.date, cell.count)}</span>
+            </li>
+          ))}
+        </ol>
+        <figcaption class="flex items-center justify-end gap-1 text-label text-subtle" aria-label="贡献强度：少到多">
+          少
+          {levelClasses.map((levelClass) => <i class:list={["size-2 rounded-tile", levelClass]} aria-hidden="true" />)}
+          多
+        </figcaption>
+      </div>
+    </div>
+  </div>
+</figure>

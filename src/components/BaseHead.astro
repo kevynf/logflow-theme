@@ -1,6 +1,4 @@
 ---
-// Import the global.css file here so that it is included on
-// all pages through the use of the <BaseHead /> component.
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { ClientRouter } from 'astro:transitions';
@@ -19,7 +17,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image, type = 'website' } = Astro.props;
 ---
 
-<!-- Global Metadata -->
+<!-- 全局元数据 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
@@ -35,7 +33,7 @@ const { title, description, image, type = 'website' } = Astro.props;
 <meta name="generator" content={Astro.generator} />
 
 <script is:inline>
-	// This code is inlined in the head to make it instant & blocking.
+	// 内联主题初始化代码，避免页面首屏出现错误主题。
 	const getThemePreference = () => {
 		if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
 			return localStorage.getItem('theme');
@@ -47,37 +45,29 @@ const { title, description, image, type = 'website' } = Astro.props;
 		document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
 	};
 	applyTheme();
-	// ClientRouter 换页会替换 <html> 属性（dark 类会丢失），换页完成后重新应用。
-	// 注意：不要监听 class 变化回写 localStorage——换页瞬间 dark 被移除会污染存储，
-	// 主题持久化只发生在 ThemeToggle 的用户点击里。
+	// ClientRouter 换页会替换 <html> 属性，因此换页完成后重新应用主题。
+	// 主题只在用户点击 ThemeToggle 时写入 localStorage，避免换页过程覆盖用户设置。
 	document.addEventListener('astro:after-swap', applyTheme);
 </script>
 
 <ClientRouter />
 
-<!-- Webfont -->
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<link
-	rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/lxgwwenkaiscreen.css"
-/>
-
-<!-- Canonical URL -->
+<!-- 规范链接 -->
 <link rel="canonical" href={canonicalURL} />
 
-<!-- Primary Meta Tags -->
+<!-- 基础元数据 -->
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 
-<!-- Open Graph / Facebook -->
+<!-- Open Graph 元数据 -->
 <meta property="og:type" content={type} />
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 {image && <meta property="og:image" content={new URL(image.src, Astro.url)} />}
 
-<!-- Twitter -->
+<!-- Twitter 元数据 -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />

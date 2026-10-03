@@ -1,25 +1,31 @@
-# LogFlow Theme
+<div align="center">
+  <img src="public/favicon.svg" alt="LogFlow Theme" width="72" />
 
-[简体中文](README.md) | [English](README.en.md)
+  # LogFlow Theme
 
-A compact, content-first Astro blog theme for writing, personal sites, and technical documentation.
+  [简体中文](README.md) | [English](README.en.md)
+</div>
 
-> 一个简洁、内容优先的 Astro 博客主题，适合中文写作、个人主页和技术文档。
+> [!NOTE]
+> A compact, content-first Astro blog theme for writing, personal sites, and technical documentation.
+
+> [!WARNING]
+> This theme is under rapid iteration, and updates may include breaking changes. Fork this repository and pin a specific commit for your own development instead of tracking `main`.
 
 <table>
   <tr>
     <td colspan="2" align="center"><img src="public/screenshots/overview.png" alt="Theme Overview · Dark Home" width="100%" /></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="public/screenshots/pixel-hero.gif" alt="Pixel Fluid Animation · Dark" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/article-dark.png" alt="Article · Dark" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/friends-dark.png" alt="Friends · Dark" width="100%" /></td>
   </tr>
   <tr>
-    <td align="center"><img src="public/screenshots/article-dark.png" alt="Article · Dark" width="100%" /></td>
-    <td align="center"><img src="public/screenshots/gh-wall-dark.png" alt="GitHub Activity · Dark" width="100%" /></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="public/screenshots/friends-dark.png" alt="Friends · Dark" width="100%" /></td>
-    <td align="center"><img src="public/screenshots/home-light.png" alt="Home · Light" width="100%" /></td>
+    <td align="center" width="50%"><img src="public/screenshots/home-light.png" alt="Home · Light" width="100%" /></td>
+    <td align="center" width="50%">
+      <img src="public/screenshots/pixel-hero.gif" alt="Pixel Fluid Animation · Dark" width="100%" />
+      <img src="public/screenshots/gh-wall-dark.png" alt="GitHub Activity · Dark" width="100%" />
+    </td>
   </tr>
 </table>
 
@@ -31,6 +37,7 @@ A compact, content-first Astro blog theme for writing, personal sites, and techn
 - Site-wide pixel fluid animation background: zero-dependency WebGL, follows the light/dark palette, with reduced-motion and no-WebGL fallbacks
 - ClientRouter seamless page transitions with link prefetch; the animation persists across pages
 - Light / dark theme, responsive mobile nav, and keyboard focus styles
+- Card-based layout primitives (Box/Cell) and design tokens built on Tailwind v4, shared by components and pages
 - RSS, sitemap, canonical, Open Graph, and Twitter Card
 - Optional Giscus comments and GitHub contribution graph
 - GitHub Pages auto-deploy via Actions
@@ -72,7 +79,7 @@ Most site information lives in `src/consts.ts`:
 
 Friend links live in `src/config/friend-links.ts`. Add entries following the `FriendLink` interface; when `avatar` is omitted, the first letter of the site name is shown instead.
 
-Design tokens (colors, fonts, spacing, widths, radii) are at the top of `src/styles/global.css` as CSS custom properties.
+Design tokens (colors, fonts, spacing, widths, radii) live at the top of `src/styles/global.css` as a Tailwind v4 `@theme` block. Tailwind utilities can be used directly in pages and MDX content, and article typography comes from the `prose` container provided by `@tailwindcss/typography`. The site title and body text share the same system sans stack, so no extra font files are needed.
 
 ## Writing
 
@@ -117,7 +124,7 @@ After enabling Discussions on your GitHub repository, edit `COMMENTS` in `src/co
 
 ## Images & Avatar
 
-- **Avatar:** Omit `avatar` to use `public/favicon.svg` as the default.
+- **Avatar:** `HOME.avatar` powers the site avatar and defaults to `public/favicon.svg`; a friend link's `avatar` may be omitted, in which case the first letter of the site name is shown.
 - **Post images:** Store images alongside posts and reference them via `heroImage` (optional).
 - **Favicon:** Replace `public/favicon.svg` to update both the default avatar and site icon.
 
@@ -130,7 +137,7 @@ Set the repository's Pages Source to **GitHub Actions**. Pushing to `main` trigg
 - Site copy & behavior: `src/consts.ts`
 - Friend links: `src/config/friend-links.ts`
 - Posts & About: `src/content/`
-- Colors, fonts, spacing, layout density: `src/styles/global.css`
+- Colors, fonts, spacing, layout density: Tailwind `@theme` tokens and custom utilities in `src/styles/global.css`
 - Page structure: `src/pages/`, `src/layouts/`, `src/components/`
 
 Prefer configuration and content for customizations; only modify components or layouts when the structure truly needs to change.
