@@ -130,7 +130,9 @@ After enabling Discussions on your GitHub repository, edit `COMMENTS` in `src/co
 
 ## GitHub Pages
 
-Set the repository's Pages Source to **GitHub Actions**. Pushing to `main` triggers an automatic deploy. The workflow sets `SITE_URL=https://<owner>.github.io` and `BASE_PATH=/<repository-name>`.
+This repository's live demo is available at <https://app.kevy.net/logflow-theme/>.
+
+Set the repository's Pages Source to **GitHub Actions**. Pushing to `main` triggers an automatic deploy. The workflow reads `SITE_URL` and `BASE_PATH` from the GitHub Pages configuration, so canonical URLs, sitemaps, and asset paths work with both custom domains and project paths. Forks can still use the default `https://<owner>.github.io/<repository-name>/` address.
 
 ## Customization Boundaries
 

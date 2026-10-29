@@ -131,7 +131,9 @@ heroImage: ./cover.png
 
 ## GitHub Pages
 
-将仓库 Pages Source 设置为 **GitHub Actions**，推送到 `main` 后自动部署。工作流会设置 `SITE_URL=https://<owner>.github.io` 与 `BASE_PATH=/<repository-name>`。
+本仓库的在线演示：<https://app.kevy.net/logflow-theme/>。
+
+将仓库 Pages Source 设置为 **GitHub Actions**，推送到 `main` 后自动部署。工作流会从 GitHub Pages 的配置读取 `SITE_URL` 与 `BASE_PATH`，因此自定义域名和项目路径都能生成正确的 canonical、sitemap 与资源地址。Fork 后的仓库仍可使用默认的 `https://<owner>.github.io/<repository-name>/` 地址。
 
 ## 自定义边界
 
